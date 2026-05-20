@@ -31,7 +31,7 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
  *
  * @author Romain Monteil <monteil.romain@gmail.com>
  */
-#[Route('/profile'), IsGranted(User::ROLE_USER)]
+#[Route('/admin/profile'), IsGranted(User::ROLE_USER)]
 final class UserController extends AbstractController
 {
     #[Route('/edit', name: 'user_edit', methods: ['GET', 'POST'])]

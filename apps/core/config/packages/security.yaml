@@ -38,7 +38,7 @@ security:
                 enable_csrf: true
                 # The page users are redirect to when there is no previous page stored in the
                 # session (for example when the users access directly to the login page).
-                default_target_path: blog_index
+                default_target_path: app_admin_data_management
 
             # This option allows users to choose to stay logged in for longer than
             # the session lasts using a cookie. Reference: https://symfony.com/doc/current/security/remember_me.html
@@ -64,6 +64,10 @@ security:
     # The ROLE_ADMIN role inherits from the ROLE_USER role
     role_hierarchy:
         ROLE_ADMIN: ROLE_USER
+
+    access_control:
+        - { path: ^/admin/login$, roles: PUBLIC_ACCESS }
+        - { path: ^/admin, roles: ROLE_USER }
 
 when@test:
     # this configuration simplifies testing URLs protected by the security mechanism
