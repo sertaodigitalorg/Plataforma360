@@ -1,0 +1,51 @@
+FROM php:8.3-fpm-alpine
+
+ARG APP_DIR=/var/www/html
+
+ENV COMPOSER_ALLOW_SUPERUSER=1 \
+    COMPOSER_HOME=/tmp/composer-cache \
+    TZ=America/Recife
+
+RUN apk add --no-cache \
+        acl \
+        bash \
+        git \
+        icu-dev \
+        libpq-dev \
+        libzip-dev \
+        oniguruma-dev \
+        postgresql-client \
+        tzdata \
+        unzip \
+    && docker-php-ext-install \
+        intl \
+        opcache \
+        pdo \
+        pdo_pgsql \
+        zip \
+    && cp /usr/share/zoneinfo/America/Recife /etc/localtime \
+    && echo "America/Recife" > /etc/timezone
+
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+
+WORKDIR ${APP_DIR}
+
+COPY apps/core/composer.json apps/core/composer.lock* ./
+
+RUN if [ -f composer.lock ]; then \
+        composer install --no-interaction --prefer-dist --optimize-autoloader || composer update --no-interaction --prefer-dist --optimize-autoloader; \
+    else \
+        composer install --no-interaction --prefer-dist --optimize-autoloader; \
+    fi
+
+COPY apps/core ./
+
+RUN mkdir -p var/cache var/log \
+    && chown -R www-data:www-data var \
+    && composer dump-autoload --optimize
+
+USER www-data
+
+EXPOSE 9000
+
+CMD ["php-fpm"]
