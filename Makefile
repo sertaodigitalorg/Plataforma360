@@ -1,8 +1,9 @@
 SHELL := /bin/sh
 COMPOSE := docker compose
+KESTRA_COMPOSE := docker compose -f docker-compose.kestra.yml
 PHP := $(COMPOSE) exec php
 
-.PHONY: install up down restart logs bash migrate
+.PHONY: install up down restart logs bash migrate kestra-up kestra-down kestra-logs kestra-restart
 
 install:
 	cp -n .env.example .env || true
@@ -27,3 +28,15 @@ bash:
 
 migrate:
 	$(PHP) php bin/console doctrine:migrations:migrate --no-interaction
+
+kestra-up:
+	$(KESTRA_COMPOSE) up -d
+
+kestra-down:
+	$(KESTRA_COMPOSE) down
+
+kestra-logs:
+	$(KESTRA_COMPOSE) logs -f --tail=200
+
+kestra-restart:
+	$(KESTRA_COMPOSE) restart

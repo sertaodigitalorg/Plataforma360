@@ -11,7 +11,7 @@ A plataforma nao e SaaS. O objetivo e permitir que prefeituras, laboratorios de 
 - `infra/php`: imagem PHP 8.3 FPM com extensoes para PostgreSQL/PostGIS.
 - `infra/postgres`: scripts de inicializacao do PostgreSQL 16 com PostGIS.
 - `data`: zonas raw, staging e processed para pipelines de dados.
-- `future`: espaco reservado para data platform, Airflow, Airbyte, Superset, Grafana, AI Hub, MCP e vector database.
+- `future`: espaco reservado para a data platform com Kestra, recursos avancados futuros com Airflow, Superset, Grafana, AI Hub, MCP e vector database.
 
 ## Requisitos
 
@@ -43,6 +43,31 @@ Credenciais padrao do banco:
 - Usuario: `plataforma360`
 - Senha: `plataforma360`
 
+## Data Platform com Kestra
+
+O Kestra passa a ser a camada inicial de ingestao, automacao de pipelines e orquestracao de dados da Plataforma360. Ele roda em stack separada no arquivo `docker-compose.kestra.yml`, preservando o ambiente principal do Symfony e mantendo a arquitetura modular.
+
+Papel de cada componente na trilha de dados:
+
+- `Kestra`: agenda, executa e monitora fluxos de ingestao e automacao.
+- `PostgreSQL/PostGIS`: recebe os dados nas zonas `raw` e `processed`, com evolucao futura para camadas analiticas.
+- `Symfony + API Platform`: expõe servicos, APIs publicas e interfaces operacionais sobre os dados tratados.
+- `Superset` futuro: consumo analitico e dashboards, sem dependencia inicial para a implantacao.
+- `Airflow` futuro: opcao avancada para cenarios de orquestracao mais complexos, sem papel obrigatorio na primeira fase.
+
+Subida local do Kestra:
+
+```bash
+docker compose -f docker-compose.kestra.yml up -d
+```
+
+Com o stack ativo:
+
+- Kestra UI: http://localhost:8082/ui/
+- Compose modular: `docker-compose.kestra.yml`
+- Fluxo inicial de exemplo: `future/kestra/flows/olinda360_primeira_ingestao.yml`
+- Manual operacional: `docs/manual-kestra.md`
+
 ## Comandos Docker
 
 ```bash
@@ -52,6 +77,10 @@ make restart  # reinicia os containers
 make logs     # acompanha logs
 make bash     # shell no container PHP
 make migrate  # executa migrations Doctrine
+make kestra-up       # sobe o stack modular do Kestra
+make kestra-down     # para o stack do Kestra
+make kestra-logs     # acompanha logs do Kestra
+make kestra-restart  # reinicia o stack do Kestra
 ```
 
 ## Estrutura
