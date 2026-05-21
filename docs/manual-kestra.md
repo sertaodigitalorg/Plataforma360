@@ -2,26 +2,40 @@
 
 ## O que e o Kestra no contexto da Plataforma360
 
-O Kestra e a camada inicial de ingestao, automacao de pipelines e orquestracao de dados da Plataforma360. Ele permite que uma prefeitura agende, execute, monitore e versione fluxos de dados sem acoplar essas rotinas ao core do sistema Symfony.
+O Kestra e a camada de ingestao, automacao de pipelines e orquestracao de dados da Plataforma360. Ele permite que uma prefeitura agende, execute, monitore e versione fluxos de dados sem acoplar essas rotinas ao portal central em Symfony.
 
 ## Papel do Kestra na arquitetura
 
 Na arquitetura da Plataforma360, o Kestra opera como modulo separado da aplicacao principal. Seu papel e:
 
 - receber dados de fontes municipais, arquivos, APIs e coletas futuras;
-- padronizar fluxos de ingestao para a zona `raw`;
-- preparar cargas para PostgreSQL/PostGIS;
+- armazenar dados brutos no MinIO como etapa inicial de data lake;
+- transformar e preparar cargas para PostgreSQL;
 - registrar execucoes, tentativas e historico operacional;
-- manter a automacao fora do Core GovTech.
+- integrar APIs, bancos, arquivos e servicos externos;
+- manter a automacao tecnica fora do portal central de governanca.
 
 O Airflow nao e dependencia inicial. Ele permanece apenas como opcao futura avancada para municipios que precisarem de uma camada adicional de orquestracao complexa.
 
-## Diferenca entre Kestra, Symfony, PostgreSQL e Superset
+## Limites de responsabilidade do Kestra
+
+O Kestra deve ser usado para fluxos tecnicos de dados e automacao da data platform. Ele nao deve assumir papeis de:
+
+- interface de usuario final;
+- dashboards executivos;
+- atendimento digital via chatbot;
+- automacoes conversacionais;
+- observabilidade tecnica central.
+
+## Diferenca entre Kestra e os demais componentes
 
 - `Kestra`: orquestra fluxos, automacoes, ingestao e jobs.
-- `Symfony`: entrega a aplicacao institucional, APIs, telas administrativas e regras de negocio.
-- `PostgreSQL/PostGIS`: persiste dados transacionais, geoespaciais e camadas `raw` e `processed`.
-- `Superset` futuro: consome dados tratados para dashboards e analise visual.
+- `Symfony`: entrega o portal central de governanca, APIs, telas administrativas, permissoes e configuracoes do ecossistema.
+- `MinIO`: armazena arquivos brutos, historico de ingestoes e objetos da camada de dados.
+- `PostgreSQL`: persiste dados relacionais, metadados, configuracoes e dados estruturados tratados.
+- `Metabase`: consome dados tratados para dashboards, indicadores e analytics de negocio.
+- `Grafana`: monitora logs, metricas, alertas e saude tecnica da infraestrutura.
+- `n8n`: opera webhooks, automacoes operacionais, IA e integracoes conversacionais no AI Hub.
 
 ## Como subir o Kestra no Docker
 
@@ -74,8 +88,8 @@ Fluxo: `olinda360_primeira_ingestao`
 Objetivo do fluxo:
 
 - simular ingestao de dados turisticos de Olinda;
-- preparar um CSV bruto para futura carga;
-- gerar um script SQL base para a schema `raw`.
+- preparar um CSV bruto para armazenamento inicial;
+- gerar uma base de transformacao para posterior carga estruturada.
 
 Passos operacionais:
 
@@ -83,15 +97,22 @@ Passos operacionais:
 2. Abra http://localhost:8082/ui/.
 3. Importe o arquivo `future/kestra/flows/olinda360_primeira_ingestao.yml` no namespace `plataforma360.turismo`.
 4. Execute o fluxo pela UI.
-5. Verifique nos logs do fluxo a preparacao dos artefatos e a contagem de registros.
+5. Verifique nos logs do fluxo a preparacao dos artefatos, a contagem de registros e os passos de transformacao.
 
-## Como o Kestra se conecta futuramente ao PostgreSQL/PostGIS
+## Como o Kestra se conecta ao MinIO e ao PostgreSQL
 
-No estado atual, o Kestra usa PostgreSQL proprio para metadados e fila interna, o que e a melhor pratica para ambiente local modular e seguro. Futuramente, os fluxos podem se conectar ao PostgreSQL/PostGIS principal da Plataforma360 para:
+No estado atual, o Kestra usa PostgreSQL proprio para metadados e fila interna, o que e a melhor pratica para ambiente local modular e seguro. Na arquitetura oficial da Plataforma360, os fluxos devem usar:
 
-- gravar dados diretamente na schema `raw`;
-- executar validacoes geoespaciais com PostGIS;
-- promover dados para `processed` apos transformacoes;
+- `MinIO` para receber e preservar arquivos brutos;
+- `PostgreSQL` para gravar dados estruturados, tratados e prontos para consumo;
+- `Metabase` como camada de leitura analitica sobre dados tratados;
+- `Symfony` como portal central para acionamento e visao resumida do ecossistema.
+
+Em evolucoes futuras, os fluxos podem se conectar ao PostgreSQL principal da Plataforma360 para:
+
+- validar, limpar e estruturar dados recebidos do MinIO;
+- executar validacoes geoespaciais com PostGIS, quando aplicavel;
+- promover dados tratados para consumo institucional e analitico;
 - disparar jobs de publicacao para APIs e analytics.
 
 Essa conexao pode ser feita por JDBC, plugins SQL do Kestra ou execucao de scripts controlados.
@@ -102,8 +123,9 @@ Essa conexao pode ser feita por JDBC, plugins SQL do Kestra ou execucao de scrip
 - manter `docker-compose.yml` e `docker-compose.kestra.yml` separados;
 - armazenar fluxos em controle de versao;
 - comecar por ingestoes simples e auditaveis;
-- separar dados `raw` de dados prontos para consumo;
+- separar dados brutos em MinIO de dados prontos para consumo em PostgreSQL;
 - evitar misturar regras de pipeline dentro do Core Symfony;
+- nao duplicar dashboards analiticos no portal central;
 - registrar credenciais reais em variaveis locais e nunca em arquivos versionados.
 
 ## Comandos uteis de Docker
@@ -148,4 +170,4 @@ make kestra-restart
 
 `Preciso integrar com o banco principal`
 
-- faca isso por fluxo versionado, mantendo o Kestra desacoplado do Core e documentando credenciais e destinos antes de operar em producao.
+- faca isso por fluxo versionado, mantendo o Kestra desacoplado do portal Symfony e documentando credenciais, buckets e destinos antes de operar em producao.

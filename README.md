@@ -6,12 +6,61 @@ A plataforma nao e SaaS. O objetivo e permitir que prefeituras, laboratorios de 
 
 ## Arquitetura
 
-- `apps/core`: aplicacao Symfony 7 com API Platform, Doctrine ORM, Twig e Bootstrap 5.
-- `infra/nginx`: proxy HTTP e front controller da aplicacao.
-- `infra/php`: imagem PHP 8.3 FPM com extensoes para PostgreSQL/PostGIS.
-- `infra/postgres`: scripts de inicializacao do PostgreSQL 16 com PostGIS.
-- `data`: zonas raw, staging e processed para pipelines de dados.
-- `future`: espaco reservado para a data platform com Kestra, recursos avancados futuros com Airflow, Superset, Grafana, AI Hub, MCP e vector database.
+O desenho da Plataforma360 separa governanca, dados, BI, observabilidade e automacoes especializadas para evitar sobreposicao de funcoes.
+
+```mermaid
+flowchart TD
+	fontes[Fontes publicas e sistemas municipais]
+	iot[IoT Hub<br/>Sensores, MQTT e telemetria<br/>trilha futura]
+
+	subgraph governanca [Portal Central]
+		symfony[Symfony<br/>Governanca, usuarios, permissoes,<br/>cadastros, links e embeds]
+		apps[Apps<br/>Modulos, APIs e servicos digitais]
+		shared[Shared<br/>Autenticacao, contratos,<br/>seguranca e padroes comuns]
+	end
+
+	subgraph dados [Data Platform]
+		kestra[Kestra<br/>Ingestao, ETL/ELT,<br/>agendamento e jobs]
+		minio[MinIO<br/>Data Lake e arquivos brutos]
+		postgres[PostgreSQL<br/>Metadados, dados estruturados<br/>e configuracoes]
+		metabase[Metabase<br/>BI, dashboards e analytics]
+	end
+
+	subgraph operacao [Automacao e Observabilidade]
+		n8n[n8n<br/>AI Hub, webhooks,<br/>automacoes operacionais]
+		grafana[Grafana<br/>Logs, metricas,<br/>alertas e saude tecnica]
+	end
+
+	fontes --> kestra
+	iot -. ingestao futura .-> kestra
+	kestra --> minio
+	kestra --> postgres
+	postgres --> metabase
+	symfony --> kestra
+	symfony --> metabase
+	apps --> shared
+	symfony --> shared
+	n8n --> symfony
+	n8n --> apps
+	grafana -. monitora .-> symfony
+	grafana -. monitora .-> kestra
+	grafana -. monitora .-> n8n
+	grafana -. monitora .-> postgres
+	grafana -. monitora .-> minio
+```
+
+- `Symfony`: portal central de governanca e configuracao da plataforma.
+- `Kestra`: orquestracao de dados, ingestao, ETL/ELT e automacoes tecnicas.
+- `Metabase`: BI, dashboards e analytics de negocio.
+- `Grafana`: observabilidade tecnica, logs, metricas e alertas.
+- `PostgreSQL`: banco relacional principal e banco de metadados.
+- `MinIO`: armazenamento de objetos e data lake.
+- `n8n`: AI Hub e automacoes operacionais fora da data platform.
+- `IoT Hub`: trilha futura para sensores, telemetria e eventos.
+- `Apps`: modulos funcionais da plataforma.
+- `Shared`: autenticacao, contratos, seguranca, observabilidade compartilhada e padroes comuns.
+
+Detalhamento arquitetural oficial em `docs/arquitetura.md`.
 
 ## Requisitos
 
@@ -50,10 +99,12 @@ O Kestra passa a ser a camada inicial de ingestao, automacao de pipelines e orqu
 Papel de cada componente na trilha de dados:
 
 - `Kestra`: agenda, executa e monitora fluxos de ingestao e automacao.
-- `PostgreSQL/PostGIS`: recebe os dados nas zonas `raw` e `processed`, com evolucao futura para camadas analiticas.
-- `Symfony + API Platform`: expõe servicos, APIs publicas e interfaces operacionais sobre os dados tratados.
-- `Superset` futuro: consumo analitico e dashboards, sem dependencia inicial para a implantacao.
-- `Airflow` futuro: opcao avancada para cenarios de orquestracao mais complexos, sem papel obrigatorio na primeira fase.
+- `MinIO`: recebe os arquivos brutos e historico de ingestao.
+- `PostgreSQL`: recebe dados tratados, metadados e configuracoes estruturadas.
+- `Metabase`: consome dados tratados para indicadores, dashboards e analytics de negocio.
+- `Symfony + API Platform`: expoe servicos, APIs publicas, governanca e interfaces operacionais sobre os dados tratados.
+- `Grafana`: monitora a saude tecnica da stack.
+- `n8n`: permanece no AI Hub para automacoes operacionais, webhooks e IA.
 
 Subida local do Kestra:
 
