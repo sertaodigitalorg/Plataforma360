@@ -5,6 +5,8 @@
 {% set dataActive = _path starts with '/admin/data-management' or _path starts with '/admin/tourist-spots' or _path starts with '/admin/events' or _path starts with '/admin/accommodations' or _path starts with '/admin/guides' or _path starts with '/admin/tourist-guides' or _path starts with '/admin/data-sources' or _path starts with '/exports' or _path starts with '/admin/analytics' %}
 {% set integrationsActive = _path starts with '/public-api/v1' or _path starts with '/mcp/v1' or _path starts with '/api/docs' or _path starts with '/webhooks' or _path starts with '/integrations' or _path == '/api' or _path starts with '/admin/integrations/metabase' %}
 {% set iaActive = _path starts with '/admin/ai' %}
+{% set operationsActive = _path starts with '/admin/operations' %}
+{% set governanceActive = _path starts with '/admin/governance' %}
 {% set platformActive = _path starts with '/architecture' or _path starts with '/infrastructure' or _path starts with '/settings' or _path starts with '/users' or _path starts with '/security' or _path starts with '/about' %}
 
 <style>
@@ -459,6 +461,39 @@
                         <li><h6 class="dropdown-header">Governança</h6></li>
                         {{ navbar.dropdown_item('Logs de IA', 'Auditoria completa de todas as interações com IA.', 'clock-history', path('app_admin_ai_logs'), _path starts with '/admin/ai/logs', null, null, false, false) }}
                         {{ navbar.dropdown_item('Configurações', 'Status do Ollama, modelos disponíveis e resumo de uso.', 'gear', path('app_admin_ai_settings'), _path starts with '/admin/ai/settings', null, null, false, false) }}
+                    </ul>
+                </li>
+
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle {{ operationsActive ? 'active' }}" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bi bi-diagram-3"></i>
+                        <span>Operações</span>
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li><h6 class="dropdown-header">Orquestração e automação · Fase 6</h6></li>
+                        {{ navbar.dropdown_item('Visão Geral', 'Dashboard de operações, saúde dos serviços e alertas ativos.', 'grid-3x3-gap-fill', path('app_admin_operations_overview'), _path == '/admin/operations', null, null, false, false) }}
+                        {{ navbar.dropdown_item('Pipelines', 'Gerencie e dispare pipelines de dados via Kestra.', 'diagram-3', path('app_admin_operations_pipelines'), _path starts with '/admin/operations/pipelines', null, null, false, false) }}
+                        {{ navbar.dropdown_item('Execuções', 'Histórico detalhado de execuções com logs e outputs.', 'clock-history', path('app_admin_operations_executions'), _path starts with '/admin/operations/executions', null, null, false, false) }}
+                        <li><hr class="dropdown-divider"></li>
+                        <li><h6 class="dropdown-header">Monitoramento</h6></li>
+                        {{ navbar.dropdown_item('Observabilidade', 'Saúde de todos os serviços: PostgreSQL, Kestra, Ollama, Qdrant.', 'heart-pulse', path('app_admin_operations_observability'), _path starts with '/admin/operations/observability', null, null, false, false) }}
+                        {{ navbar.dropdown_item('Alertas', 'Alertas ativos por falhas, indisponibilidade e anomalias.', 'bell', path('app_admin_operations_alerts'), _path starts with '/admin/operations/alerts', null, null, false, false) }}
+                        {{ navbar.dropdown_item('Métricas IA', 'Uso de modelos, tokens e custos estimados de IA.', 'robot', path('app_admin_operations_ai_metrics'), _path starts with '/admin/operations/ai-metrics', null, null, false, false) }}
+                        {{ navbar.dropdown_item('Logs', 'Logs operacionais, auditoria e execuções de pipelines.', 'journal-text', path('app_admin_operations_logs'), _path starts with '/admin/operations/logs', null, null, false, false) }}
+                    </ul>
+                </li>
+
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle {{ governanceActive ? 'active' }}" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bi bi-shield-check"></i>
+                        <span>Governança</span>
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li><h6 class="dropdown-header">Dados e conformidade · Fase 6</h6></li>
+                        {{ navbar.dropdown_item('Dados', 'Classificação LGPD, política de retenção e responsáveis.', 'shield-lock', path('app_admin_governance_data'), _path starts with '/admin/governance/data', null, null, false, false) }}
+                        {{ navbar.dropdown_item('Governança IA', 'Rastreamento de uso de IA, provedores e conformidade.', 'robot', path('app_admin_governance_ai'), _path starts with '/admin/governance/ai', null, null, false, false) }}
+                        {{ navbar.dropdown_item('Custos', 'Rastreamento de custos por serviço externo (OpenAI etc.).', 'currency-dollar', path('app_admin_governance_costs'), _path starts with '/admin/governance/costs', null, null, false, false) }}
+                        {{ navbar.dropdown_item('Auditoria', 'Trilha completa de todas as ações administrativas.', 'shield-check', path('app_admin_governance_audit'), _path starts with '/admin/governance/audit', null, null, false, false) }}
                     </ul>
                 </li>
 

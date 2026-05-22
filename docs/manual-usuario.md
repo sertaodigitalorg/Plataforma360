@@ -282,7 +282,216 @@ Para cada camada, você vê a contagem de itens processados e se está ativa.
 
 ---
 
-## Resumo do Fluxo Completo
+## Fase 5 — Inteligência Artificial Híbrida
+
+> **Pré-requisito:** iniciar com o perfil `ai`: `docker compose --profile ai up -d`
+
+### 17. Usar o Assistente de IA
+
+**Menu:** IA → Assistente
+
+O assistente permite fazer perguntas em linguagem natural sobre os dados da plataforma.
+
+**Como usar:**
+1. Acesse **IA → Assistente**
+2. Selecione na barra lateral:
+   - **Modelo:** Ollama local (gratuito, soberano) ou OpenAI (externo, pago)
+   - **Contexto:** define quais dados o assistente pode consultar
+   - **Agente:** especialização do assistente (turismo, executivo, técnico, etc.)
+3. Digite sua pergunta, ex: *"Quantas agências de turismo estão cadastradas por estado?"*
+4. O assistente consulta o warehouse e responde em linguagem natural
+
+**Quick prompts disponíveis:**
+- Análise de indicadores de turismo
+- Relatório executivo mensal
+- Qualidade dos dados por dataset
+- Comparativo territorial
+
+---
+
+### 18. Configurar Modelos de IA
+
+**Menu:** IA → Modelos
+
+**Como adicionar um modelo Ollama (local):**
+1. Acesse **IA → Modelos → Novo Modelo**
+2. Provedor: `ollama`
+3. Nome do modelo: `llama3`, `mistral`, `codellama`, etc.
+4. Endpoint: `http://ollama:11434` (padrão)
+5. Marque **Modelo padrão** se for o principal
+6. Salve
+
+> Para baixar o modelo: `docker compose exec ollama ollama pull llama3`
+
+**Como adicionar OpenAI (externo):**
+1. Provedor: `openai`
+2. Nome do modelo: `gpt-4o-mini`, `gpt-4o`
+3. Cole a API Key no campo correspondente
+4. Atenção: interações externas têm custo e são auditadas
+
+---
+
+### 19. Gerenciar Agentes Especializados
+
+**Menu:** IA → Agentes
+
+Agentes são configurações especializadas por domínio com ferramentas específicas.
+
+| Agente | Especialidade | Ferramentas |
+|---|---|---|
+| Turismo | Dados do setor de turismo | buscar_indicadores, consultar_warehouse |
+| Dados Públicos | Catálogo CKAN | listar_datasets, obter_qualidade |
+| Executivo | Relatórios de gestão | gerar_relatorio, comparativo territorial |
+| Técnico | Qualidade e linhagem | obter_linhagem_dataset, consulta SQL |
+
+---
+
+### 20. Consultar Logs de IA
+
+**Menu:** IA → Logs
+
+Exibe todas as interações com o assistente, incluindo:
+- Provedor e modelo utilizado
+- Tokens consumidos (entrada + saída)
+- Custo estimado em USD
+- Status (sucesso/falha)
+- Se foi via provedor externo
+
+---
+
+## Fase 6 — Operações e Governança
+
+### 21. Visão Geral de Operações
+
+**Menu:** Operações → Visão Geral
+
+Dashboard com KPIs operacionais em tempo real:
+- Pipelines ativos / falhas hoje
+- Alertas críticos
+- Status geral dos serviços
+- Execuções recentes
+- Alertas recentes
+
+---
+
+### 22. Gerenciar Pipelines
+
+**Menu:** Operações → Pipelines
+
+Pipelines são fluxos de dados orquestrados pelo Kestra.
+
+**Como cadastrar um pipeline:**
+1. Acesse **Operações → Pipelines → Novo Pipeline**
+2. Preencha:
+   - **Nome** e **Tipo** (ingestão, transformação, warehouse, embeddings, etc.)
+   - **Trigger** (manual, cron, evento, webhook)
+   - **Cron Expression** (se agendado, ex: `0 2 * * *`)
+   - **Kestra Namespace** (ex: `plataforma360`)
+   - **Kestra Flow ID** (ex: `ingestao-ckan-turismo`)
+   - **Kestra YAML** (definição do flow para referência)
+3. Salve
+
+**Para disparar manualmente:**
+- Clique no botão ▶ na linha do pipeline
+- A execução aparece em **Operações → Execuções**
+
+**Para pausar/retomar:**
+- Clique no botão ⏸/▶ na coluna de ações
+
+---
+
+### 23. Acompanhar Execuções
+
+**Menu:** Operações → Execuções
+
+Lista todas as execuções com:
+- Status (CREATED, RUNNING, SUCCESS, FAILED, CANCELLED)
+- Pipeline associado
+- Quem disparou e quando
+- Duração
+
+Clique no ícone 👁 para ver o **detalhe da execução** com:
+- Logs completos
+- Inputs e outputs
+- Mensagem de erro (se falhou)
+- Sync automático com o status no Kestra
+
+---
+
+### 24. Observabilidade dos Serviços
+
+**Menu:** Operações → Observabilidade
+
+Verificação em tempo real da saúde de todos os serviços:
+
+| Serviço | O que é verificado |
+|---|---|
+| Symfony | Memória do processo PHP |
+| PostgreSQL | Latência, contagem de tabelas |
+| Kestra | Disponibilidade da API |
+| Ollama | Disponibilidade + modelos carregados |
+| Qdrant | Status da API |
+| Metabase | Status da API |
+| Storage | Diretórios raw/staging acessíveis |
+
+---
+
+### 25. Gerenciar Alertas
+
+**Menu:** Operações → Alertas
+
+Alertas são gerados automaticamente por falhas de pipeline, serviços offline ou anomalias.
+
+**Ações disponíveis:**
+- **Reconhecer (✓):** marca como visto, registra o responsável
+- **Resolver (✓✓):** marca como resolvido
+
+Os níveis são: `info`, `warning`, `critical` — críticos aparecem destacados em vermelho.
+
+---
+
+### 26. Governança de Dados (LGPD)
+
+**Menu:** Governança → Dados
+
+Registre a política de governança de cada dataset:
+
+1. Acesse **Governança → Dados → Novo Registro**
+2. Preencha:
+   - **Classificação:** público, interno, restrito, sensível
+   - **Sensibilidade:** nenhuma, baixa, média, alta
+   - **Aplica-se LGPD:** marque se o dataset contém dados pessoais
+   - **Base Legal LGPD:** consentimento, obrigação legal, interesse legítimo, etc.
+   - **Responsável (Owner)** e **Steward**
+   - **Retenção (dias):** política de retenção dos dados
+
+---
+
+### 27. Rastrear Custos
+
+**Menu:** Governança → Custos
+
+Acompanhe os custos de serviços externos (principalmente OpenAI):
+- Total do mês atual em USD
+- Breakdown por serviço
+- Série diária dos últimos 30 dias
+
+> Serviços locais como Ollama e Qdrant têm custo zero.
+
+---
+
+### 28. Consultar Auditoria
+
+**Menu:** Governança → Auditoria
+
+Trilha completa de todas as ações administrativas:
+- **Filtro por ação:** `pipeline_run`, `config_change`, `ai_query`, etc.
+- **Filtro por usuário:** busca por e-mail ou identifier
+- Cada entrada registra: ação, descrição, entidade, usuário, IP e data/hora
+
+---
+
+## Resumo do Fluxo Completo (Fases 1–6)
 
 ```
 [1] Provedor CKAN
@@ -307,4 +516,12 @@ Para cada camada, você vê a contagem de itens processados e se está ativa.
 [10] Dashboards incorporados
      ↓
 [11] Indicadores + APIs Analíticas
+     ↓
+[12] Assistente de IA (consulta warehouse em linguagem natural)
+     ↓
+[13] Pipelines Kestra (orquestração automatizada)
+     ↓
+[14] Operações + Alertas + Observabilidade
+     ↓
+[15] Governança LGPD + Auditoria + Custos
 ```

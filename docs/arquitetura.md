@@ -14,22 +14,29 @@ Os blocos arquiteturais sao organizados da seguinte forma:
 
 ```text
 Plataforma360
-├── Portal Central de Governanca
-│   └── Symfony
-├── Data Platform
-│   └── Kestra + PostgreSQL + MinIO
+├── Portal Central de Governanca (apps/core)
+│   └── Symfony 7 · PHP 8.3
+│       ├── Fase 1-3: CKAN, Pipeline, RAW, Staging, Qualidade
+│       ├── Fase 4: Warehouse, Metabase embed, Analytics APIs
+│       ├── Fase 5: IA híbrida (Ollama local + OpenAI externo)
+│       └── Fase 6: Operações, Pipelines Kestra, Observabilidade, Governança
+├── Data Warehouse
+│   └── PostgreSQL (schemas: staging.*, warehouse.*, public.*)
+├── Orquestração de Dados
+│   └── Kestra (perfil Docker: ops)
 ├── BI e Analytics
-│   └── Metabase
-├── Observabilidade Tecnica
+│   └── Metabase (embed via iframe)
+├── IA Local
+│   ├── Ollama (LLM — perfil Docker: ai)
+│   └── Qdrant (banco vetorial — perfil Docker: ai)
+├── Observabilidade (futuro)
 │   └── Grafana
-├── AI Hub
+├── AI Hub (futuro)
 │   └── n8n
-├── IoT Hub
+├── IoT Hub (futuro)
 │   └── Sensores + MQTT + Telemetria
-├── Apps
-│   └── Modulos de negocio e servicos digitais
 └── Shared
-    └── Autenticacao, contratos, seguranca e padroes comuns
+    └── Autenticação, contratos, segurança e padrões comuns
 ```
 
 Em termos praticos, o Core em `apps/core` permanece como portal central de governanca e configuracao, enquanto os demais componentes evoluem como servicos complementares e especializados. A pasta `future` continua reservada para trilhas de evolucao da data platform, observabilidade, AI Hub, IoT Hub e demais modulos avancados.
@@ -60,12 +67,14 @@ Responsavel por:
 - Catalogo de indicadores oficiais.
 - Gestao de modulos da plataforma.
 - Centralizacao de links e embeds dos dashboards.
-- Acionamento de fluxos do Kestra.
+- Acionamento de fluxos do Kestra via API REST (Fase 6).
 - Exibicao de cards executivos e status resumidos.
 - Administracao das configuracoes do ecossistema.
 - Catalogo de provedores CKAN, pacotes sincronizados e monitoramento manual inicial.
 - Consulta administrativa de metadados `package_list` e `package_show`.
 - Registro institucional das execucoes de sincronizacao e da trilha de ingestao.
+- **Fase 5**: Assistente de IA híbrido (Ollama local + OpenAI), agentes especializados, NL-to-SQL, embeddings vetoriais, governança de IA.
+- **Fase 6**: Dashboard de operações, gerenciamento de pipelines Kestra, observabilidade de serviços, alertas, trilha de auditoria, rastreamento de custos, classificação LGPD.
 
 Nao deve ser responsavel por:
 
@@ -114,6 +123,10 @@ Responsavel por:
 - Execucao de jobs.
 - Registro de execucoes.
 - Integracao com APIs, bancos, arquivos e servicos externos.
+
+A partir da **Fase 6**, o Kestra está integrado ao `docker-compose.yml` principal via perfil `ops`, compartilhando a rede Docker `plataforma360` com o portal Symfony. O portal pode disparar e acompanhar execucoes via API REST do Kestra.
+
+Para subir: `docker compose --profile ops up -d`
 
 Nao deve ser responsavel por:
 
@@ -209,7 +222,30 @@ Nao deve ser responsavel por:
 - BI principal.
 - Observabilidade tecnica central.
 
-### 3.8 IoT Hub - Sensores e Cidades Inteligentes
+### 3.8 Ollama - IA Local (Fase 5)
+
+Responsavel por:
+
+- Execucao de modelos de linguagem localmente (LLM).
+- Chat com contexto institucional (turismo, dados públicos, warehouse).
+- Geracao de embeddings vetoriais para busca semantica.
+- Alternativa local e soberana ao OpenAI/GPT.
+
+Integrado ao Symfony via `OllamaService`. Ativado com o perfil Docker `ai`.
+
+Para subir: `docker compose --profile ai up -d`
+
+### 3.9 Qdrant - Banco Vetorial (Fase 5)
+
+Responsavel por:
+
+- Armazenamento de embeddings vetoriais.
+- Busca semântica sobre datasets, indicadores e documentos.
+- Base para RAG (Retrieval-Augmented Generation) com Ollama ou OpenAI.
+
+Integrado ao Symfony via `AiEmbedding` e serviços de embeddings. Ativado com o perfil Docker `ai`.
+
+### 3.10 IoT Hub - Sensores e Cidades Inteligentes
 
 Responsavel por:
 
@@ -223,7 +259,7 @@ Responsavel por:
 
 O IoT Hub permanece reservado para a evolucao da arquitetura em cenarios com sensores, dispositivos conectados e telemetria urbana em tempo real.
 
-### 3.9 Apps - Aplicacoes da Plataforma
+### 3.11 Apps - Aplicacoes da Plataforma
 
 Responsavel por:
 
@@ -235,7 +271,7 @@ Responsavel por:
 
 Apps representam os modulos de negocio da Plataforma360. Eles materializam funcionalidades para usuarios finais e equipes gestoras, utilizando servicos compartilhados e integracoes controladas com os demais componentes.
 
-### 3.10 Shared - Camada Transversal
+### 3.12 Shared - Camada Transversal
 
 Responsavel por:
 
@@ -255,80 +291,81 @@ Shared e a camada transversal que define consistencia tecnica entre modulos, red
 
 | Componente | Responsabilidade Principal | O que pode fazer | O que nao deve fazer |
 | --- | --- | --- | --- |
-| Symfony | Governanca e configuracao central | Usuarios, permissoes, cadastros, catalogos, modulos, links de dashboards, acionamento do Kestra e cards executivos | BI complexo, data lake, pipelines pesados, substituicao do Metabase |
+| Symfony | Governanca e configuracao central | Usuarios, permissoes, cadastros, catalogos, modulos, links de dashboards, acionamento do Kestra, IA hibrida, operacoes, governanca | BI complexo, data lake, pipelines pesados, substituicao do Metabase |
 | Kestra | Orquestracao de dados | Ingestao, ETL/ELT, agendamentos, reprocessamentos, jobs e integracoes tecnicas | Interface final, dashboards executivos, chatbot, automacoes conversacionais |
 | Metabase | BI e analytics de negocio | Dashboards, relatorios, comparativos, series historicas e exportacoes | Gestao estrutural da plataforma, pipelines, logs tecnicos, cadastros administrativos |
-| Grafana | Observabilidade tecnica | Metricas, logs, alertas, uptime, monitoramento de servicos, banco e infraestrutura | BI de negocio, indicadores publicos, cadastros administrativos, operacao de fluxos |
-| PostgreSQL | Persistencia relacional e metadados | Dados estruturados, configuracoes, usuarios, permissoes e camadas tratadas | Armazenamento massivo de arquivos brutos como papel principal |
-| MinIO | Data lake e objetos | Arquivos brutos, historico de ingestoes e armazenamento compativel com S3 | Regras transacionais da aplicacao e consultas analiticas como ferramenta final |
-| n8n | Automacoes operacionais e AI Hub | Webhooks, integracoes rapidas, chatbot, IA, atendimento digital e canais externos | Data lake, pipelines pesados, BI principal, observabilidade central |
-| IoT Hub | Telemetria e sensores | MQTT, eventos, telemetria, alertas e integracao com dispositivos | Papel de BI, portal administrativo ou orquestrador central de dados gerais |
+| PostgreSQL | Persistencia relacional e metadados | Dados estruturados, staging, warehouse, configuracoes, usuarios, permissoes | Armazenamento massivo de arquivos brutos como papel principal |
+| Ollama | IA local soberana | LLM local, embeddings, chat institucional, alternativa ao OpenAI | BI, pipelines pesados, bancos vetoriais |
+| Qdrant | Banco vetorial | Embeddings, busca semantica, RAG | Dados relacionais, dashboard, pipeline ETL |
+| Grafana | Observabilidade tecnica (futuro) | Metricas, logs, alertas, uptime, monitoramento de servicos | BI de negocio, indicadores publicos, cadastros administrativos |
+| n8n | Automacoes operacionais e AI Hub (futuro) | Webhooks, integracoes rapidas, chatbot, IA, atendimento digital e canais externos | Data lake, pipelines pesados, BI principal, observabilidade central |
+| IoT Hub | Telemetria e sensores (futuro) | MQTT, eventos, telemetria, alertas e integracao com dispositivos | Papel de BI, portal administrativo ou orquestrador central de dados gerais |
 | Apps | Funcionalidades de negocio | Portais, APIs, modulos setoriais e servicos digitais | Substituir componentes especializados de BI, dados ou observabilidade |
 | Shared | Capacidade transversal | Autenticacao, contratos, seguranca, DTOs, schemas e padroes comuns | Concentrar regras de negocio especificas de um modulo |
 
 ## 5. Fluxo de Funcionamento
 
-Exemplo de fluxo operacional da arquitetura:
+Exemplo de fluxo operacional da arquitetura (Fases 1–6):
 
-1. Uma fonte publica ou sistema municipal envia dados.
-2. O modulo CKAN do Symfony cadastra o provedor, consulta `package_list` e persiste o inventario de pacotes.
+1. Uma fonte pública ou sistema municipal disponibiliza dados.
+2. O módulo CKAN do Symfony cadastra o provedor, consulta `package_list` e persiste o inventário de pacotes.
 3. O administrador marca quais pacotes devem entrar em monitoramento.
 4. O Core consulta `package_show`, persiste resources e registra `ingestion_runs`.
-5. Kestra executa a ingestao automatizada futura.
-6. Dados brutos sao armazenados no MinIO.
-7. Dados tratados vao para PostgreSQL ou banco analitico futuro.
-8. Metabase gera indicadores e dashboards.
-9. Symfony apresenta visao central, links, embeds e controle de acesso.
-10. Grafana monitora saude dos servicos.
-11. n8n atua em automacoes operacionais e IA.
-12. IoT Hub, futuramente, recebe sensores e telemetria.
+5. **Fase 6**: Um pipeline é disparado pelo menu Operações → Pipelines, acionando o Kestra via API REST.
+6. O Kestra executa a ingestão, transforma e promove dados para as tabelas `staging.*` e `warehouse.*`.
+7. O portal sincroniza o status da execução via `KestraService`.
+8. Metabase gera indicadores e dashboards a partir do warehouse.
+9. **Fase 5**: O assistente de IA consulta dados do warehouse em linguagem natural via Ollama local ou OpenAI.
+10. Symfony apresenta visão central, embeds de dashboards, operações e governança.
+11. **Fase 6**: Alertas são gerados automaticamente em caso de falhas ou indisponibilidade de serviços.
+12. **Fase 6**: Auditoria registra todas as ações administrativas com IP e usuário.
 
 ```text
 Fonte publica ou sistema municipal
-	|
-	v
-      Kestra
-	|
-	+--> MinIO (dados brutos)
-	|
-	v
-PostgreSQL / camada analitica futura
-	|
-	v
-     Metabase
-	|
-	v
+        |
+        v
+  Kestra (perfil ops)
+        |
+        v
+PostgreSQL warehouse.* / staging.*
+        |
+        v
+     Metabase ←→ embed no Symfony
+        |
+        v
      Symfony
-
-Grafana monitora toda a stack
-n8n opera automacoes operacionais e IA
-IoT Hub evolui como trilha futura para sensores e telemetria
+  (Portal + IA + Operações + Governança)
+        |
+        ↕
+  Ollama + Qdrant (perfil ai) — IA local soberana
 ```
 
 ## 6. Decisao Arquitetural Oficial
 
-Para o MVP da Plataforma360 serao utilizados:
+Para a Plataforma360 (Fases 1–6 implementadas) estão em uso:
 
-- Symfony
-- Kestra
-- PostgreSQL
-- MinIO
-- Metabase
-- Grafana
+- Symfony (portal, IA, operações, governança)
+- Kestra (orquestração — perfil `ops`)
+- PostgreSQL (dados, warehouse, metadados)
+- Metabase (BI e dashboards)
+- Ollama (IA local — perfil `ai`)
+- Qdrant (banco vetorial — perfil `ai`)
 
-O n8n sera mantido no AI Hub.
+**Planejados para o futuro:**
+- Grafana (observabilidade técnica avançada)
+- n8n (AI Hub, automações operacionais)
+- IoT Hub (sensores e telemetria)
 
-O IoT Hub sera reservado para evolucao futura.
-
-Essa decisao oficial define o escopo inicial da implantacao e evita antecipar componentes que ainda nao sao necessarios para a operacao do MVP.
+MinIO foi avaliado e não foi adotado no MVP — o armazenamento de arquivos brutos usa o filesystem local em `storage/raw/`.
 
 ## 7. Diretrizes de Evolucao
 
 - Evitar duplicacao de dashboards no Symfony.
 - Usar Metabase para analytics de negocio.
-- Usar Grafana para observabilidade tecnica.
-- Usar Kestra para pipelines.
-- Usar n8n para automacoes operacionais.
+- Usar Grafana para observabilidade tecnica (futuro).
+- Usar Kestra para pipelines — disparado pelo portal via API.
+- Usar n8n para automacoes operacionais (futuro).
+- Usar Ollama para IA local soberana; OpenAI apenas quando necessário e com auditoria.
 - Manter documentacao atualizada a cada mudanca arquitetural.
 
 Como diretriz complementar, o portal central deve permanecer desacoplado da execucao de pipelines e do armazenamento bruto; a data platform deve continuar separada da automacao conversacional; e a observabilidade deve ser tratada como capacidade tecnica transversal, nao como ferramenta de BI.

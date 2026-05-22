@@ -131,6 +131,53 @@ services:
       TZ: America/Recife
     networks:
       - plataforma360
+
+  # ── Fase 6: Orquestração — perfil "ops" ──────────────────────────────────────
+  # Para iniciar: docker compose --profile ops up -d
+
+  kestra-postgres:
+    image: postgres:16-alpine
+    container_name: plataforma360-kestra-postgres
+    profiles: ["ops"]
+    restart: always
+    environment:
+      POSTGRES_DB: ${KESTRA_POSTGRES_DB:-kestra}
+      POSTGRES_USER: ${KESTRA_POSTGRES_USER:-kestra}
+      POSTGRES_PASSWORD: ${KESTRA_POSTGRES_PASSWORD:-kestra}
+      TZ: America/Recife
+      PGTZ: America/Recife
+    volumes:
+      - kestra_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - plataforma360
+
+  kestra:
+    image: kestra/kestra:latest-full
+    container_name: plataforma360-kestra
+    profiles: ["ops"]
+    restart: always
+    user: "root"
+    command: server standalone --config /etc/kestra/application.yml
+    depends_on:
+      kestra-postgres:
+        condition: service_healthy
+    ports:
+      - "${KESTRA_PORT:-8082}:8080"
+    environment:
+      TZ: America/Recife
+    volumes:
+      - ./future/kestra/application.yml:/etc/kestra/application.yml:ro
+      - ./future/kestra/flows:/app/flows
+      - ./future/kestra/examples:/app/examples:ro
+      - kestra_storage:/app/storage
+      - kestra_tmp:/tmp/kestra-wd
+    networks:
+      - plataforma360
   # ─────────────────────────────────────────────────────────────────────────────
 
 networks:
@@ -151,3 +198,9 @@ volumes:
     name: plataforma360-ollama-data
   qdrant_data:
     name: plataforma360-qdrant-data
+  kestra_postgres_data:
+    name: plataforma360-kestra-postgres-data
+  kestra_storage:
+    name: plataforma360-kestra-storage
+  kestra_tmp:
+    name: plataforma360-kestra-tmp
