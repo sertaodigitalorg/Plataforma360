@@ -26,9 +26,25 @@
 - Grafana e Superset.
 - Evolucao da camada CKAN para verificacao diaria, jobs assincronos e disparo de pipelines Kestra ou Messenger sobre a base operacional ja existente.
 
-## Fase 4 - Interoperabilidade e IA
+## Fase 4 - Data Warehouse, Analytics e Metabase ✅ Implementada
+
+- Camada `warehouse.*` no PostgreSQL com schemas fact/dim/dw.
+- Entidade `AnalyticModel` para definir transformações STAGING → WAREHOUSE.
+- Serviço `WarehouseTransformationService` — orquestração de transformações analíticas.
+- Serviço `MetabaseService` — integração com Metabase (teste de conexão, sync).
+- `MetabaseConfig` — configuração de instância Metabase com status de conexão.
+- `MetabaseDashboard` — registro e embed de dashboards Metabase.
+- `AnalyticsHistory` — trilha de auditoria de todos os eventos analíticos.
+- APIs analíticas: `/api/analytics/indicadores`, `/turismo/agencias`, `/ranking`, `/lineage`.
+- Linhagem de dados (CKAN → RAW → STAGING → WAREHOUSE → DASHBOARDS).
+- Embed responsivo de dashboards via iframe integrado ao visual da plataforma.
+- Menu atualizado: Dados → Warehouse/Modelos/Linhagem, Inteligência → Dashboards BI, Integrações → Metabase/APIs Analíticas.
+- Manual do usuário em `docs/manual-usuario.md`.
+
+## Fase 5 - Interoperabilidade e IA (Futuro)
 
 - MCP Layer.
 - AI Hub.
 - Vector DB.
-- Conectores com sistemas publicos.
+- Conectores com sistemas públicos.
+- Automação Kestra avançada.

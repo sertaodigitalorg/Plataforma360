@@ -2,8 +2,8 @@
 {% set _route = app.current_route|default('') %}
 {% set _path = app.request.pathInfo|default('/') %}
 {% set intelligenceActive = _route == 'dashboard' or _path starts with '/dashboard' or _path starts with '/batch-monitor' or _path starts with '/analytics' or _path starts with '/observability' or _path starts with '/logs' or _path starts with '/indicators' %}
-{% set dataActive = _path starts with '/admin/data-management' or _path starts with '/admin/tourist-spots' or _path starts with '/admin/events' or _path starts with '/admin/accommodations' or _path starts with '/admin/guides' or _path starts with '/admin/tourist-guides' or _path starts with '/admin/data-sources' or _path starts with '/exports' %}
-{% set integrationsActive = _path starts with '/public-api/v1' or _path starts with '/mcp/v1' or _path starts with '/api/docs' or _path starts with '/webhooks' or _path starts with '/integrations' or _path == '/api' %}
+{% set dataActive = _path starts with '/admin/data-management' or _path starts with '/admin/tourist-spots' or _path starts with '/admin/events' or _path starts with '/admin/accommodations' or _path starts with '/admin/guides' or _path starts with '/admin/tourist-guides' or _path starts with '/admin/data-sources' or _path starts with '/exports' or _path starts with '/admin/analytics' %}
+{% set integrationsActive = _path starts with '/public-api/v1' or _path starts with '/mcp/v1' or _path starts with '/api/docs' or _path starts with '/webhooks' or _path starts with '/integrations' or _path == '/api' or _path starts with '/admin/integrations/metabase' %}
 {% set platformActive = _path starts with '/architecture' or _path starts with '/infrastructure' or _path starts with '/settings' or _path starts with '/users' or _path starts with '/security' or _path starts with '/about' %}
 
 <style>
@@ -373,6 +373,9 @@
                         {{ navbar.dropdown_item('Monitoramento Batch', 'Observabilidade das coletas automatizadas e sincronizações críticas.', 'database-gear', path('app_batch_monitor'), _path starts with '/batch-monitor', null, null, false, false) }}
                         {{ navbar.dropdown_item('Observabilidade', 'Sinais de saúde, disponibilidade e eventos operacionais da plataforma.', 'broadcast-pin', path('app_platform_observability'), _path starts with '/observability', 'Em breve', 'warning', false, true) }}
                         {{ navbar.dropdown_item('Logs Operacionais', 'Trilha operacional para auditoria, suporte e rastreabilidade.', 'journal-text', path('app_platform_logs'), _path starts with '/logs', 'Em breve', 'warning', false, true) }}
+                        <li><hr class="dropdown-divider"></li>
+                        <li><h6 class="dropdown-header">Dashboards · Fase 4</h6></li>
+                        {{ navbar.dropdown_item('Dashboards BI', 'Central de dashboards Metabase incorporados na plataforma de inteligência territorial.', 'bar-chart-line-fill', path('app_admin_metabase_dashboards'), _path starts with '/admin/integrations/metabase/dashboards', null, null, false, false) }}
                     </ul>
                 </li>
 
@@ -405,6 +408,11 @@
                         {{ navbar.dropdown_item('Catálogo', 'Inventário estruturado dos datasets normalizados disponíveis na plataforma.', 'collection', path('app_admin_data_catalog'), _path starts with '/admin/data-pipeline/catalog', null, null, false) }}
                         {{ navbar.dropdown_item('Preview Staging', 'Visualização dos dados normalizados e tipos convertidos na camada staging.', 'layers', path('app_admin_staging_preview'), _path starts with '/admin/data-pipeline/staging', null, null, false) }}
                         <li><hr class="dropdown-divider"></li>
+                        <li><h6 class="dropdown-header">Warehouse · Fase 4</h6></li>
+                        {{ navbar.dropdown_item('Data Warehouse', 'Tabelas analíticas consolidadas do pipeline de dados territoriais.', 'database-fill', path('app_admin_warehouse_overview'), _path starts with '/admin/analytics/warehouse' and _path != '/admin/analytics/warehouse/models' and not (_path starts with '/admin/analytics/warehouse/lineage'), null, null, false) }}
+                        {{ navbar.dropdown_item('Modelos Analíticos', 'Definição de transformações STAGING → WAREHOUSE com dimensões e métricas.', 'gear-wide-connected', path('app_admin_analytic_models'), _path starts with '/admin/analytics/warehouse/models', null, null, false) }}
+                        {{ navbar.dropdown_item('Linhagem de Dados', 'Fluxo completo dos dados: CKAN → RAW → STAGING → WAREHOUSE → DASHBOARDS.', 'diagram-3', path('app_admin_data_lineage'), _path starts with '/admin/analytics/warehouse/lineage', null, null, false) }}
+                        <li><hr class="dropdown-divider"></li>
                         {{ navbar.dropdown_item('Exportações CSV', 'Central de exportações operacionais para reuso e intercâmbio.', 'file-earmark-arrow-down', path('app_exports_index'), _path starts with '/exports', null, null, false) }}
                     </ul>
                 </li>
@@ -424,6 +432,10 @@
                         <li><h6 class="dropdown-header">Conectores e ecossistema</h6></li>
                         {{ navbar.dropdown_item('Webhooks', 'Eventos de integração e automações orientadas a disparo.', 'send-check', path('app_platform_webhooks'), _path starts with '/webhooks', 'Em breve', 'warning', false) }}
                         {{ navbar.dropdown_item('Integrações Externas', 'Mapa de parceiros, conectores e serviços de terceiros.', 'plugin', path('app_platform_integrations'), _path starts with '/integrations', 'Em breve', 'warning', false) }}
+                        <li><hr class="dropdown-divider"></li>
+                        <li><h6 class="dropdown-header">BI & Warehouse · Fase 4</h6></li>
+                        {{ navbar.dropdown_item('Metabase', 'Configuração e integração com a instância Metabase para analytics e dashboards.', 'graph-up', path('app_admin_metabase_config'), _path == '/admin/integrations/metabase', null, null, false, false) }}
+                        {{ navbar.dropdown_item('APIs Analíticas', 'Endpoints analíticos do warehouse para consumo externo, apps e IA futura.', 'braces', '/api/analytics/indicadores', _path starts with '/api/analytics', null, null, false, false) }}
                     </ul>
                 </li>
 
