@@ -39,6 +39,7 @@
                                 <th>Início</th>
                                 <th>Fim</th>
                                 <th>Mensagem</th>
+                                <th>Eventos</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -52,10 +53,19 @@
                                     <td>{{ run.startedAt ? run.startedAt|date('d/m/Y H:i') : 'N/D' }}</td>
                                     <td>{{ run.finishedAt ? run.finishedAt|date('d/m/Y H:i') : 'Em aberto' }}</td>
                                     <td class="text-secondary">{{ run.message ?: 'Sem mensagem' }}</td>
+                                    <td>
+                                        <div class="d-flex gap-1 flex-wrap">
+                                            {% for log in run.logs|reverse|slice(0, 3) %}
+                                                <span class="provider-soft-badge provider-soft-badge--secondary">{{ log.event ?? 'evento' }}</span>
+                                            {% else %}
+                                                <span class="text-secondary">Sem eventos</span>
+                                            {% endfor %}
+                                        </div>
+                                    </td>
                                 </tr>
                             {% else %}
                                 <tr>
-                                    <td colspan="7" class="text-center py-5 text-secondary">Ainda não há execuções registradas.</td>
+                                    <td colspan="8" class="text-center py-5 text-secondary">Ainda não há execuções registradas.</td>
                                 </tr>
                             {% endfor %}
                         </tbody>

@@ -2,15 +2,19 @@
 
 namespace App\Controller\Admin;
 
+use App\Entity\Data\RawFile;
 use App\Entity\DataProvider;
+use App\Entity\DatasetResource;
 use App\Entity\IngestionRun;
 use App\Entity\ProviderPackage;
 use App\Entity\User;
 use App\Form\DataProviderType;
+use App\Repository\Data\RawFileRepository;
 use App\Repository\DataProviderRepository;
 use App\Repository\IngestionRunRepository;
 use App\Repository\ProviderPackageRepository;
 use App\Service\CkanProviderService;
+use App\Service\DataPipeline\PipelineJobService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -23,6 +27,35 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 #[IsGranted(User::ROLE_ADMIN)]
 final class DataProviderController extends AbstractController
 {
+    #[Route('/overview', name: 'app_admin_ingestion_overview', methods: ['GET'])]
+    public function overview(
+        DataProviderRepository $providerRepository,
+        ProviderPackageRepository $packageRepository,
+        IngestionRunRepository $runRepository,
+        RawFileRepository $rawFileRepository,
+    ): Response {
+        $recentRuns = $runRepository->findRecentRuns(10);
+
+        $statusCounts = array_fill_keys(IngestionRun::getAvailableStatuses(), 0);
+        foreach ($runRepository->findRecentRuns(100) as $run) {
+            $statusCounts[$run->getStatus()] = ($statusCounts[$run->getStatus()] ?? 0) + 1;
+        }
+
+        return $this->render('admin/data_providers/overview.html.twig', [
+            'summary' => [
+                'totalProviders' => $providerRepository->count([]),
+                'activeProviders' => $providerRepository->countActiveProviders(),
+                'totalPackages' => $packageRepository->countAllPackages(),
+                'monitoredPackages' => $packageRepository->countMonitored(),
+                'totalRawFiles' => $rawFileRepository->count([]),
+                'previewableFiles' => $rawFileRepository->countPreviewable(),
+            ],
+            'recentRuns' => $recentRuns,
+            'statusCounts' => $statusCounts,
+            'statusPresentation' => $this->getRunStatusPresentation(),
+        ]);
+    }
+
     #[Route('', name: 'app_admin_data_providers', methods: ['GET'])]
     public function index(
         DataProviderRepository $providerRepository,
@@ -102,6 +135,7 @@ final class DataProviderController extends AbstractController
         return $this->render('admin/data_providers/packages.html.twig', [
             'packages' => $packages,
             'provider' => null,
+            'latestRawFiles' => $this->indexLatestRawFiles($packages),
         ]);
     }
 
@@ -154,9 +188,12 @@ final class DataProviderController extends AbstractController
     #[Route('/{id<\d+>}/packages', name: 'app_admin_data_providers_packages', methods: ['GET'])]
     public function providerPackages(DataProvider $provider, ProviderPackageRepository $packageRepository): Response
     {
+        $packages = $packageRepository->findByProviderOrdered($provider);
+
         return $this->render('admin/data_providers/packages.html.twig', [
-            'packages' => $packageRepository->findByProviderOrdered($provider),
+            'packages' => $packages,
             'provider' => $provider,
+            'latestRawFiles' => $this->indexLatestRawFiles($packages),
         ]);
     }
 
@@ -178,6 +215,76 @@ final class DataProviderController extends AbstractController
             'metadata' => $metadata,
             'resources' => $package->getResources(),
         ]);
+    }
+
+    #[Route('/packages/{id<\d+>}/download', name: 'app_admin_provider_package_download', methods: ['POST'])]
+    public function downloadPackageResource(ProviderPackage $package, CkanProviderService $ckanProviderService, PipelineJobService $pipelineJobService): Response
+    {
+        try {
+            $ckanProviderService->syncPackageResources($package);
+            $resource = $this->resolvePrimaryResource($package);
+
+            if (null === $resource) {
+                throw new \RuntimeException('Nenhum resource elegível foi encontrado neste pacote.');
+            }
+
+            $result = $pipelineJobService->dispatchDownload($resource);
+            $this->addFlash('success', $result['message']);
+        } catch (\Throwable $exception) {
+            $this->addFlash('danger', $exception->getMessage());
+        }
+
+        return $this->redirectToRoute('app_admin_provider_package_show', ['id' => $package->getId()], Response::HTTP_SEE_OTHER);
+    }
+
+    #[Route('/packages/{id<\d+>}/pipeline', name: 'app_admin_provider_package_pipeline', methods: ['POST'])]
+    public function executePackagePipeline(ProviderPackage $package, CkanProviderService $ckanProviderService, PipelineJobService $pipelineJobService): Response
+    {
+        try {
+            $ckanProviderService->syncPackageResources($package);
+            $resource = $this->resolvePrimaryResource($package);
+
+            if (null === $resource) {
+                throw new \RuntimeException('Nenhum resource elegível foi encontrado neste pacote.');
+            }
+
+            $result = $pipelineJobService->executePipeline($resource);
+            $this->addFlash('success', $result['message']);
+        } catch (\Throwable $exception) {
+            $this->addFlash('danger', $exception->getMessage());
+        }
+
+        return $this->redirectToRoute('app_admin_provider_package_show', ['id' => $package->getId()], Response::HTTP_SEE_OTHER);
+    }
+
+    #[Route('/resources/{id<\d+>}/download', name: 'app_admin_dataset_resource_download', methods: ['POST'])]
+    public function downloadResource(DatasetResource $resource, PipelineJobService $pipelineJobService): Response
+    {
+        try {
+            $result = $pipelineJobService->dispatchDownload($resource);
+            $this->addFlash('success', $result['message']);
+        } catch (\Throwable $exception) {
+            $this->addFlash('danger', $exception->getMessage());
+        }
+
+        return $this->redirect($this->generateUrl('app_admin_provider_package_show', [
+            'id' => $resource->getProviderPackage()->getId(),
+        ]).'#resources', Response::HTTP_SEE_OTHER);
+    }
+
+    #[Route('/resources/{id<\d+>}/pipeline', name: 'app_admin_dataset_resource_pipeline', methods: ['POST'])]
+    public function executeResourcePipeline(DatasetResource $resource, PipelineJobService $pipelineJobService): Response
+    {
+        try {
+            $result = $pipelineJobService->executePipeline($resource);
+            $this->addFlash('success', $result['message']);
+        } catch (\Throwable $exception) {
+            $this->addFlash('danger', $exception->getMessage());
+        }
+
+        return $this->redirect($this->generateUrl('app_admin_provider_package_show', [
+            'id' => $resource->getProviderPackage()->getId(),
+        ]).'#resources', Response::HTTP_SEE_OTHER);
     }
 
     #[Route('/packages/{id<\d+>}/monitor/on', name: 'app_admin_provider_package_monitor_on', methods: ['POST'])]
@@ -214,5 +321,48 @@ final class DataProviderController extends AbstractController
             IngestionRun::STATUS_WARNING => ['label' => 'Atenção', 'tone' => 'warning'],
             IngestionRun::STATUS_FAILED => ['label' => 'Falha', 'tone' => 'danger'],
         ];
+    }
+
+    /**
+     * @param list<ProviderPackage> $packages
+     *
+     * @return array<int, RawFile>
+     */
+    private function indexLatestRawFiles(array $packages): array
+    {
+        $latestRawFiles = [];
+
+        foreach ($packages as $package) {
+            foreach ($package->getResources() as $resource) {
+                $rawFile = $resource->getLatestRawFile();
+
+                if (null !== $rawFile) {
+                    $latestRawFiles[$package->getId()] = $rawFile;
+                    break;
+                }
+            }
+        }
+
+        return $latestRawFiles;
+    }
+
+    private function resolvePrimaryResource(ProviderPackage $package): ?DatasetResource
+    {
+        $resources = $package->getResources()->toArray();
+        usort($resources, static function (DatasetResource $left, DatasetResource $right): int {
+            $priority = ['CSV' => 0, 'XLSX' => 1, 'JSON' => 2, 'ZIP' => 3];
+            $leftPriority = $priority[$left->getFormat() ?? ''] ?? 99;
+            $rightPriority = $priority[$right->getFormat() ?? ''] ?? 99;
+
+            return [$leftPriority, $left->getName() ?? $left->getResourceId()] <=> [$rightPriority, $right->getName() ?? $right->getResourceId()];
+        });
+
+        foreach ($resources as $resource) {
+            if ('' !== trim($resource->getUrl())) {
+                return $resource;
+            }
+        }
+
+        return null;
     }
 }

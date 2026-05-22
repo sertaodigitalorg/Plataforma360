@@ -18,7 +18,7 @@
                     <div class="col-lg-8">
                         <span class="badge rounded-pill text-bg-light text-primary mb-3">Preparação de Pipeline</span>
                         <h1 id="ingestion-title" class="display-6 fw-bold mb-3">Ingestão de Dados</h1>
-                        <p class="lead mb-0">Painel preparado para acompanhar sincronizações CKAN, futura verificação diária dos pacotes monitorados e integração com storage RAW e Kestra.</p>
+                        <p class="lead mb-0">Painel operacional para acompanhar downloads CKAN, storage RAW, preview de datasets e descoberta de schema, já desacoplado para orquestração futura.</p>
                     </div>
                     <div class="col-lg-4">
                         <div class="provider-hero-note p-4 h-100">
@@ -76,12 +76,12 @@
                                 <p>Comparação entre metadata atual e resources já persistidos.</p>
                             </article>
                             <article>
-                                <p>3. Download</p>
-                                <p>Arquivos poderão seguir para storage RAW.</p>
+                                <p>3. Download e preview</p>
+                                <p>Arquivos seguem para o RAW com parser CSV/XLSX e schema inferido.</p>
                             </article>
                             <article>
                                 <p>4. Kestra</p>
-                                <p>Execução orquestrada com logs e rastreabilidade de ponta a ponta.</p>
+                                <p>Jobs futuros poderão substituir a execução síncrona atual sem alterar a camada de domínio.</p>
                             </article>
                         </div>
                     </div>
@@ -106,6 +106,7 @@
                                         <th>Início</th>
                                         <th>Fim</th>
                                         <th>Mensagem</th>
+                                        <th>Eventos</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -118,10 +119,19 @@
                                             <td>{{ run.startedAt ? run.startedAt|date('d/m/Y H:i') : 'N/D' }}</td>
                                             <td>{{ run.finishedAt ? run.finishedAt|date('d/m/Y H:i') : 'Em aberto' }}</td>
                                             <td class="text-secondary">{{ run.message ?: 'Sem mensagem' }}</td>
+                                            <td>
+                                                <div class="d-flex gap-1 flex-wrap">
+                                                    {% for log in run.logs|reverse|slice(0, 2) %}
+                                                        <span class="provider-soft-badge provider-soft-badge--secondary">{{ log.event ?? 'evento' }}</span>
+                                                    {% else %}
+                                                        <span class="text-secondary">Sem eventos</span>
+                                                    {% endfor %}
+                                                </div>
+                                            </td>
                                         </tr>
                                     {% else %}
                                         <tr>
-                                            <td colspan="6" class="text-center py-5 text-secondary">Nenhuma execução registrada ainda.</td>
+                                            <td colspan="7" class="text-center py-5 text-secondary">Nenhuma execução registrada ainda.</td>
                                         </tr>
                                     {% endfor %}
                                 </tbody>

@@ -325,4 +325,5 @@ final class CkanProviderService
             return null;
         }
     }
+
 }

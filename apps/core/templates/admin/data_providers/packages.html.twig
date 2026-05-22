@@ -18,7 +18,7 @@
                     <div>
                         <span class="badge rounded-pill text-bg-light text-primary mb-3">Inventário CKAN</span>
                         <h1 id="provider-packages-title" class="display-6 fw-bold mb-3">{{ provider ? 'Pacotes do provedor ' ~ provider.name : 'Pacotes CKAN sincronizados' }}</h1>
-                        <p class="lead mb-0">Selecione os pacotes que devem entrar no monitoramento automatizado e consulte seus detalhes sob demanda via package_show.</p>
+                        <p class="lead mb-0">Selecione os pacotes que devem entrar no monitoramento automatizado, baixe resources reais para o RAW e execute a pipeline de preview/schema sob demanda.</p>
                     </div>
                     <div class="d-flex gap-2 flex-wrap">
                         {% if provider %}
@@ -45,12 +45,14 @@
                                 <th>Descrição</th>
                                 <th>Status</th>
                                 <th>Automação</th>
+                                <th>Pipeline RAW</th>
                                 <th>Última verificação</th>
                                 <th class="text-end">Ações</th>
                             </tr>
                         </thead>
                         <tbody>
                             {% for package in packages %}
+                                {% set latestRawFile = latestRawFiles[package.id] ?? null %}
                                 <tr>
                                     {% if not provider %}
                                         <td>
@@ -74,6 +76,14 @@
                                         </span>
                                     </td>
                                     <td>
+                                        {% if latestRawFile %}
+                                            <div class="fw-semibold">{{ latestRawFile.downloadStatus == constant('App\\Entity\\Data\\RawFile::STATUS_DUPLICATE') ? 'Hash reaproveitado' : 'RAW disponível' }}</div>
+                                            <div class="small text-secondary">{{ latestRawFile.localPath }}</div>
+                                        {% else %}
+                                            <span class="text-secondary">Sem download ainda</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
                                         {% if package.lastCheckedAt %}
                                             {{ package.lastCheckedAt|date('d/m/Y H:i') }}
                                         {% else %}
@@ -82,6 +92,12 @@
                                     </td>
                                     <td>
                                         <div class="d-flex justify-content-end gap-2 flex-wrap">
+                                            <form method="post" action="{{ path('app_admin_provider_package_pipeline', {id: package.id}) }}">
+                                                <button type="submit" class="btn btn-sm btn-primary">Executar pipeline</button>
+                                            </form>
+                                            <form method="post" action="{{ path('app_admin_provider_package_download', {id: package.id}) }}">
+                                                <button type="submit" class="btn btn-sm btn-outline-primary">Baixar resource</button>
+                                            </form>
                                             <a class="btn btn-sm btn-outline-primary" href="{{ path('app_admin_provider_package_show', {id: package.id}) }}">Ver detalhes</a>
                                             <a class="btn btn-sm btn-outline-secondary" href="{{ path('app_admin_provider_package_show', {id: package.id}) }}#resources">Ver recursos</a>
                                             {% if package.isMonitored %}
@@ -98,7 +114,7 @@
                                 </tr>
                             {% else %}
                                 <tr>
-                                    <td colspan="{{ provider ? 7 : 8 }}" class="text-center py-5 text-secondary">Nenhum pacote sincronizado ainda. Execute a sincronização do provedor para preencher esta listagem.</td>
+                                    <td colspan="{{ provider ? 8 : 9 }}" class="text-center py-5 text-secondary">Nenhum pacote sincronizado ainda. Execute a sincronização do provedor para preencher esta listagem.</td>
                                 </tr>
                             {% endfor %}
                         </tbody>

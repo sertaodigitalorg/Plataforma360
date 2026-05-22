@@ -31,9 +31,13 @@ services:
       APP_DEBUG: ${APP_DEBUG:-1}
       APP_TIMEZONE: ${APP_TIMEZONE:-America/Recife}
       DATABASE_URL: ${DATABASE_URL:-postgresql://plataforma360:plataforma360@postgres:5432/plataforma360?serverVersion=16&charset=utf8}
+      RAW_STORAGE_DIR: ${RAW_STORAGE_DIR:-/var/storage/raw}
+      CKAN_RESOURCE_TIMEOUT: ${CKAN_RESOURCE_TIMEOUT:-90}
       TZ: America/Recife
     volumes:
       - ./apps/core:/var/www/html
+      - ./data:/var/data
+      - ./storage:/var/storage
       - core_vendor:/var/www/html/vendor
       - core_var:/var/www/html/var
       - composer_cache:/tmp/composer-cache

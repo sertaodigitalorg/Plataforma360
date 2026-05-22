@@ -9,18 +9,35 @@ ENV COMPOSER_ALLOW_SUPERUSER=1 \
 RUN apk add --no-cache \
         acl \
         bash \
+        freetype-dev \
         git \
         icu-dev \
+        libjpeg-turbo-dev \
+        libpng-dev \
         libpq-dev \
+        libwebp-dev \
+        libxml2-dev \
         libzip-dev \
         oniguruma-dev \
         postgresql-client \
         tzdata \
         unzip \
+    && docker-php-ext-configure gd \
+        --with-freetype \
+        --with-jpeg \
+        --with-webp \
     && docker-php-ext-install \
+        dom \
+    && docker-php-ext-install \
+        simplexml \
+        xml \
+        xmlwriter \
+        xmlreader \
+    && docker-php-ext-install \
+        gd \
         intl \
+        mbstring \
         opcache \
-        pdo \
         pdo_pgsql \
         zip \
     && cp /usr/share/zoneinfo/America/Recife /etc/localtime \

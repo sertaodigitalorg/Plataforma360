@@ -2,7 +2,10 @@
 
 namespace App\Entity;
 
+use App\Entity\Data\RawFile;
 use App\Repository\DatasetResourceRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -55,9 +58,17 @@ class DatasetResource
     #[ORM\Column(name: 'updated_at', nullable: true)]
     private ?\DateTimeImmutable $updatedAt = null;
 
+    /**
+     * @var Collection<int, RawFile>
+     */
+    #[ORM\OneToMany(mappedBy: 'datasetResource', targetEntity: RawFile::class, orphanRemoval: true, cascade: ['persist'])]
+    #[ORM\OrderBy(['downloadedAt' => 'DESC', 'id' => 'DESC'])]
+    private Collection $rawFiles;
+
     public function __construct()
     {
         $this->createdAt = new \DateTimeImmutable();
+        $this->rawFiles = new ArrayCollection();
     }
 
     #[ORM\PreUpdate]
@@ -205,5 +216,30 @@ class DatasetResource
     public function getUpdatedAt(): ?\DateTimeImmutable
     {
         return $this->updatedAt;
+    }
+
+    /**
+     * @return Collection<int, RawFile>
+     */
+    public function getRawFiles(): Collection
+    {
+        return $this->rawFiles;
+    }
+
+    public function addRawFile(RawFile $rawFile): self
+    {
+        if (!$this->rawFiles->contains($rawFile)) {
+            $this->rawFiles->add($rawFile);
+            $rawFile->setDatasetResource($this);
+        }
+
+        return $this;
+    }
+
+    public function getLatestRawFile(): ?RawFile
+    {
+        $rawFile = $this->rawFiles->first();
+
+        return false === $rawFile ? null : $rawFile;
     }
 }

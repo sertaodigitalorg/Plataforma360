@@ -76,21 +76,31 @@ Nao deve ser responsavel por:
 
 ### 3.1.1 Modulo CKAN de Provedores de Dados
 
-Dentro do Core Symfony, a Plataforma360 passou a contar com um modulo administrativo para provedores de dados CKAN. Esse modulo vive no menu `Dados` e organiza a camada de ingestao publica em quatro superficies:
+Dentro do Core Symfony, a Plataforma360 passou a contar com um modulo administrativo para provedores de dados CKAN. Esse modulo vive no menu `Dados` e organiza a camada de ingestao publica em seis superficies:
 
-- `Provedores de Dados`: cadastro da fonte CKAN, base URL, rotas de `package_list` e `package_show`, status e sincronizacao manual;
+- `Visao Geral / Provedores de Dados`: cadastro da fonte CKAN, base URL, rotas de `package_list` e `package_show`, status e sincronizacao manual;
 - `Pacotes CKAN`: inventario persistido de pacotes retornados pela API, com ativacao de monitoramento por pacote;
-- `Ingestao de Dados`: visao operacional preparada para futura automacao diaria, storage RAW e acionamento do Kestra;
-- `Historico de Execucoes`: trilha de auditoria das sincronizacoes e verificacoes ja realizadas.
+- `Ingestao de Dados`: visao operacional da pipeline real, com download, parser, preview e descoberta de schema;
+- `Arquivos RAW`: catalogo dos artefatos fisicos salvos localmente em `storage/raw/{provider}/{package}/{year}/{month}`;
+- `Preview Dataset`: inspecao tabular das primeiras linhas dos arquivos CSV/XLSX importados;
+- `Historico de Execucoes`: trilha de auditoria das sincronizacoes, downloads, parser e schema discovery.
 
-O dominio persistente foi estruturado em quatro tabelas principais:
+O dominio persistente foi estruturado em seis tabelas principais:
 
 - `data_providers`: cadastro de provedores CKAN;
 - `provider_packages`: pacotes sincronizados de cada provedor;
 - `dataset_resources`: resources retornados por `package_show`;
+- `raw_files`: arquivos fisicos baixados, hash SHA256, mime, path local, status e controle de duplicidade;
+- `dataset_schemas`: colunas detectadas a partir dos parsers de preview;
 - `ingestion_runs`: historico de execucao, mensagens e logs estruturados.
 
-Essa camada prepara o Core para orquestrar ingestao publica sem acoplar download pesado e pipeline completa ao portal institucional.
+Na implementacao atual, o Core tambem passou a concentrar uma camada operacional desacoplada em `src/Service/DataPipeline` com tres servicos centrais:
+
+- `RawFileStorageService`: download HTTP via Symfony HttpClient, deteccao de MIME, escrita fisica em RAW e deduplicacao por hash;
+- `DatasetPreviewService`: parser CSV/XLSX, leitura de cabecalho, preview das primeiras linhas e inferencia de schema;
+- `PipelineJobService`: orquestracao sincrona do fluxo `download -> raw -> preview -> schema`, preservando a API necessaria para futura troca por Kestra, RabbitMQ ou Symfony Messenger.
+
+Essa camada prepara o Core para orquestrar ingestao publica real sem acoplar ETL pesado, staging ou warehouse ao portal institucional.
 
 ### 3.2 Kestra - Orquestracao de Dados
 
