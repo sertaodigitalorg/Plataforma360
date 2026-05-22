@@ -63,6 +63,9 @@ Responsavel por:
 - Acionamento de fluxos do Kestra.
 - Exibicao de cards executivos e status resumidos.
 - Administracao das configuracoes do ecossistema.
+- Catalogo de provedores CKAN, pacotes sincronizados e monitoramento manual inicial.
+- Consulta administrativa de metadados `package_list` e `package_show`.
+- Registro institucional das execucoes de sincronizacao e da trilha de ingestao.
 
 Nao deve ser responsavel por:
 
@@ -70,6 +73,24 @@ Nao deve ser responsavel por:
 - Substituir Metabase ou outra ferramenta de BI.
 - Armazenar grandes volumes de dados brutos.
 - Executar pipelines pesados de dados.
+
+### 3.1.1 Modulo CKAN de Provedores de Dados
+
+Dentro do Core Symfony, a Plataforma360 passou a contar com um modulo administrativo para provedores de dados CKAN. Esse modulo vive no menu `Dados` e organiza a camada de ingestao publica em quatro superficies:
+
+- `Provedores de Dados`: cadastro da fonte CKAN, base URL, rotas de `package_list` e `package_show`, status e sincronizacao manual;
+- `Pacotes CKAN`: inventario persistido de pacotes retornados pela API, com ativacao de monitoramento por pacote;
+- `Ingestao de Dados`: visao operacional preparada para futura automacao diaria, storage RAW e acionamento do Kestra;
+- `Historico de Execucoes`: trilha de auditoria das sincronizacoes e verificacoes ja realizadas.
+
+O dominio persistente foi estruturado em quatro tabelas principais:
+
+- `data_providers`: cadastro de provedores CKAN;
+- `provider_packages`: pacotes sincronizados de cada provedor;
+- `dataset_resources`: resources retornados por `package_show`;
+- `ingestion_runs`: historico de execucao, mensagens e logs estruturados.
+
+Essa camada prepara o Core para orquestrar ingestao publica sem acoplar download pesado e pipeline completa ao portal institucional.
 
 ### 3.2 Kestra - Orquestracao de Dados
 
@@ -240,14 +261,17 @@ Shared e a camada transversal que define consistencia tecnica entre modulos, red
 Exemplo de fluxo operacional da arquitetura:
 
 1. Uma fonte publica ou sistema municipal envia dados.
-2. Kestra executa a ingestao.
-3. Dados brutos sao armazenados no MinIO.
-4. Dados tratados vao para PostgreSQL ou banco analitico futuro.
-5. Metabase gera indicadores e dashboards.
-6. Symfony apresenta visao central, links, embeds e controle de acesso.
-7. Grafana monitora saude dos servicos.
-8. n8n atua em automacoes operacionais e IA.
-9. IoT Hub, futuramente, recebe sensores e telemetria.
+2. O modulo CKAN do Symfony cadastra o provedor, consulta `package_list` e persiste o inventario de pacotes.
+3. O administrador marca quais pacotes devem entrar em monitoramento.
+4. O Core consulta `package_show`, persiste resources e registra `ingestion_runs`.
+5. Kestra executa a ingestao automatizada futura.
+6. Dados brutos sao armazenados no MinIO.
+7. Dados tratados vao para PostgreSQL ou banco analitico futuro.
+8. Metabase gera indicadores e dashboards.
+9. Symfony apresenta visao central, links, embeds e controle de acesso.
+10. Grafana monitora saude dos servicos.
+11. n8n atua em automacoes operacionais e IA.
+12. IoT Hub, futuramente, recebe sensores e telemetria.
 
 ```text
 Fonte publica ou sistema municipal

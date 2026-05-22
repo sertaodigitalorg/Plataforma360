@@ -12,6 +12,7 @@
 - Ingestao de dados abertos.
 - Organizacao das zonas raw, staging e processed.
 - APIs publicas versionadas.
+- Modulo CKAN no Core para cadastro de provedores, sincronizacao de `package_list`, consulta de `package_show` e selecao de pacotes monitorados.
 
 ## Fase 3 - Analytics e Observabilidade
 
@@ -19,6 +20,7 @@
 - Indicadores turisticos.
 - Logs estruturados, metricas e traces.
 - Grafana e Superset.
+- Evolucao da camada CKAN para verificacao diaria, download automatizado de resources e disparo de pipelines Kestra.
 
 ## Fase 4 - Interoperabilidade e IA
 

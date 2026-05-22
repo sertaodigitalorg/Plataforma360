@@ -104,8 +104,35 @@
         border: 1px solid rgba(11, 60, 93, 0.08);
         border-radius: 1.15rem;
         box-shadow: 0 1.4rem 3rem rgba(7, 40, 68, 0.14);
+        max-height: min(72vh, calc(100dvh - 7.5rem));
         min-width: 21rem;
+        overflow-x: hidden;
+        overflow-y: auto;
+        overscroll-behavior: contain;
         padding: 0.75rem;
+        scrollbar-gutter: stable;
+        scrollbar-width: thin;
+        scrollbar-color: rgba(11, 60, 93, 0.24) transparent;
+    }
+
+    .app-navbar .dropdown-menu::-webkit-scrollbar {
+        width: 0.65rem;
+    }
+
+    .app-navbar .dropdown-menu::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    .app-navbar .dropdown-menu::-webkit-scrollbar-thumb {
+        background: rgba(11, 60, 93, 0.22);
+        border: 2px solid transparent;
+        border-radius: 999px;
+        background-clip: padding-box;
+    }
+
+    .app-navbar .dropdown-menu::-webkit-scrollbar-thumb:hover {
+        background: rgba(11, 60, 93, 0.34);
+        background-clip: padding-box;
     }
 
     .app-navbar .dropdown-header {
@@ -276,6 +303,7 @@
         .app-navbar .dropdown-menu {
             background: rgba(255, 255, 255, 0.96);
             box-shadow: none;
+            max-height: min(55vh, calc(100dvh - 12rem));
             margin-top: 0.45rem;
             min-width: 100%;
         }
@@ -361,6 +389,12 @@
                         {{ navbar.dropdown_item('Hospedagens', 'Infraestrutura receptiva e capacidade de permanência no destino.', 'building', path('app_admin_resource_index', {resource: 'accommodations'}), _path starts with '/admin/accommodations', null, null, false) }}
                         {{ navbar.dropdown_item('Guias Turísticos', 'Rede de profissionais, especialidades e atuação territorial.', 'person-badge', path('app_admin_resource_index', {resource: 'guides'}), _path starts with '/admin/guides' or _path starts with '/admin/tourist-guides', null, null, false) }}
                         {{ navbar.dropdown_item('Fontes de Dados', 'Catálogo de bases monitoradas e insumos institucionais.', 'server', path('app_admin_resource_index', {resource: 'data-sources'}), _path starts with '/admin/data-sources', null, null, false) }}
+                        <li><hr class="dropdown-divider"></li>
+                        <li><h6 class="dropdown-header">Ingestão pública</h6></li>
+                        {{ navbar.dropdown_item('Provedores de Dados', 'Cadastro de provedores CKAN e sincronização institucional de pacotes.', 'cloud-arrow-down', path('app_admin_data_providers'), _path starts with '/admin/data-providers', null, null, false) }}
+                        {{ navbar.dropdown_item('Pacotes CKAN', 'Inventário de pacotes sincronizados para monitoramento e detalhamento.', 'boxes', path('app_admin_provider_packages'), _path starts with '/admin/data-providers/packages', null, null, false) }}
+                        {{ navbar.dropdown_item('Ingestão de Dados', 'Painel preparado para automação futura com storage RAW e Kestra.', 'database-fill-gear', path('app_admin_ingestion_runs'), _path starts with '/admin/data-providers/ingestion', null, null, false) }}
+                        {{ navbar.dropdown_item('Histórico de Execuções', 'Trilha operacional das sincronizações CKAN já realizadas.', 'journal-text', path('app_admin_ingestion_history'), _path starts with '/admin/data-providers/history', null, null, false) }}
                         <li><hr class="dropdown-divider"></li>
                         {{ navbar.dropdown_item('Exportações CSV', 'Central de exportações operacionais para reuso e intercâmbio.', 'file-earmark-arrow-down', path('app_exports_index'), _path starts with '/exports', null, null, false) }}
                     </ul>

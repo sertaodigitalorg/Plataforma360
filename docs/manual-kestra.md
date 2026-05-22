@@ -117,6 +117,25 @@ Em evolucoes futuras, os fluxos podem se conectar ao PostgreSQL principal da Pla
 
 Essa conexao pode ser feita por JDBC, plugins SQL do Kestra ou execucao de scripts controlados.
 
+## Como o modulo CKAN do Core prepara a integracao com o Kestra
+
+O Core Symfony agora mantem uma camada administrativa para provedores CKAN. Essa camada nao executa pipeline pesada ainda, mas prepara os insumos que o Kestra vai consumir:
+
+- cadastro do provedor em `data_providers`;
+- sincronizacao da lista de pacotes em `provider_packages` via `package_list`;
+- sincronizacao dos arquivos de cada dataset em `dataset_resources` via `package_show`;
+- trilha operacional em `ingestion_runs` para status, mensagens e logs.
+
+O fluxo futuro recomendado e:
+
+1. o Core identifica quais `provider_packages` estao monitorados;
+2. uma rotina agendada chama o Kestra para verificar novos resources;
+3. o Kestra baixa os arquivos e grava na zona `data/raw` ou em bucket MinIO equivalente;
+4. o pipeline promove o dado para `staging` e `processed`;
+5. o Core recebe de volta o status operacional e atualiza a trilha de execucao.
+
+Essa separacao preserva o papel do Symfony como governanca e do Kestra como orquestrador tecnico.
+
 ## Boas praticas para prefeituras instalarem localmente
 
 - usar WSL Ubuntu no Windows para execucao dos comandos Docker e Make;
