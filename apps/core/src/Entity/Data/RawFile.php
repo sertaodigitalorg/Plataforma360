@@ -23,6 +23,11 @@ class RawFile
     public const STATUS_DUPLICATE = 'duplicate';
     public const STATUS_FAILED = 'failed';
 
+    public const TRANSFORMATION_PENDING = 'pending';
+    public const TRANSFORMATION_RUNNING = 'running';
+    public const TRANSFORMATION_DONE = 'done';
+    public const TRANSFORMATION_FAILED = 'failed';
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
@@ -66,6 +71,12 @@ class RawFile
 
     #[ORM\Column(name: 'already_processed', options: ['default' => false])]
     private bool $alreadyProcessed = false;
+
+    #[ORM\Column(name: 'staging_path', length: 1024, nullable: true)]
+    private ?string $stagingPath = null;
+
+    #[ORM\Column(name: 'transformation_status', length: 30)]
+    private string $transformationStatus = self::TRANSFORMATION_PENDING;
 
     #[ORM\Column(name: 'downloaded_at', nullable: true)]
     private ?\DateTimeImmutable $downloadedAt = null;
@@ -256,6 +267,12 @@ class RawFile
 
         return $this;
     }
+
+    public function getStagingPath(): ?string { return $this->stagingPath; }
+    public function setStagingPath(?string $stagingPath): self { $this->stagingPath = $stagingPath; return $this; }
+
+    public function getTransformationStatus(): string { return $this->transformationStatus; }
+    public function setTransformationStatus(string $transformationStatus): self { $this->transformationStatus = $transformationStatus; return $this; }
 
     public function getDownloadedAt(): ?\DateTimeImmutable
     {

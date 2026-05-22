@@ -90,4 +90,36 @@ final class RawFileRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
+    /**
+     * @return list<RawFile>
+     */
+    public function findWithStaging(int $limit = 50): array
+    {
+        return $this->createQueryBuilder('raw_file')
+            ->andWhere('raw_file.stagingPath IS NOT NULL')
+            ->orderBy('raw_file.downloadedAt', 'DESC')
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function countWithStaging(): int
+    {
+        return (int) $this->createQueryBuilder('raw_file')
+            ->select('COUNT(raw_file.id)')
+            ->andWhere('raw_file.stagingPath IS NOT NULL')
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
+    public function countTransformationFailed(): int
+    {
+        return (int) $this->createQueryBuilder('raw_file')
+            ->select('COUNT(raw_file.id)')
+            ->andWhere('raw_file.transformationStatus = :status')
+            ->setParameter('status', RawFile::TRANSFORMATION_FAILED)
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
 }
