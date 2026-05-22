@@ -38,6 +38,20 @@
 - APIs analíticas: `/api/analytics/indicadores`, `/turismo/agencias`, `/ranking`, `/lineage`.
 - Linhagem de dados (CKAN → RAW → STAGING → WAREHOUSE → DASHBOARDS).
 - Embed responsivo de dashboards via iframe integrado ao visual da plataforma.
+
+## Fase 5 - Camada de Inteligência Artificial Híbrida ✅ Implementada
+
+- **IA Local (Ollama)**: `OllamaService` — chat, embed, listagem de modelos. Perfil Docker `ai` com `ollama` e `qdrant`.
+- **IA Externa (OpenAI)**: `OpenAiService` — chat e embeddings com estimativa de custo. Chave armazenada criptografada.
+- **Roteamento**: `AiProviderService` — despacha para Ollama ou OpenAI com base no modelo configurado. Bloqueia envio externo por política de contexto.
+- **Governança**: `AiGovernanceService` — registra todas as interações em `ai_interactions` com tokens, custo, duração, status e provider.
+- **Registro de Prompts**: `AiPromptRepository` + `PromptTemplateService` — templates reutilizáveis com variáveis `{{placeholders}}`.
+- **Agentes especializados**: `AiAgentService` + `AiToolRegistryService` — agentes por domínio (turismo, dados públicos, executivo, técnico) com ferramentas de consulta a warehouse, catálogo e indicadores.
+- **NL-to-SQL seguro**: `NaturalLanguageSqlService` — converte perguntas em SQL SELECT para o warehouse. Bloqueia DDL/DML.
+- **Entidades**: `AiModel`, `AiPrompt`, `AiContext`, `AiAgent`, `AiInteraction`, `AiEmbedding`.
+- **Assistente Web**: Chat institucional com histórico, quick prompts, seletor de modelo/contexto/agente e indicador de latência.
+- **Menu IA no navbar**: Assistente, Insights, Modelos, Agentes, Contextos, Prompts, Logs, Configurações.
+- **Segurança**: API keys nunca em claro, aviso de IA externa, bloqueio por `allowedForExternal`, apenas SELECT no NL-to-SQL, auditoria completa.
 - Menu atualizado: Dados → Warehouse/Modelos/Linhagem, Inteligência → Dashboards BI, Integrações → Metabase/APIs Analíticas.
 - Manual do usuário em `docs/manual-usuario.md`.
 

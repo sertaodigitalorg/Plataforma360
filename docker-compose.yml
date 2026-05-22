@@ -100,6 +100,39 @@ services:
     networks:
       - plataforma360
 
+  # ─── IA LOCAL — Phase 5 ──────────────────────────────────────────────────────
+  # Start with: docker compose --profile ai up -d
+  # Install a model: docker compose exec ollama ollama pull llama3
+  ollama:
+    image: ollama/ollama:latest
+    container_name: plataforma360-ollama
+    restart: unless-stopped
+    profiles: ["ai"]
+    ports:
+      - "${OLLAMA_PORT:-11434}:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    environment:
+      TZ: America/Recife
+    networks:
+      - plataforma360
+
+  # Vector Database — optional, used for RAG/embeddings
+  qdrant:
+    image: qdrant/qdrant:latest
+    container_name: plataforma360-qdrant
+    restart: unless-stopped
+    profiles: ["ai"]
+    ports:
+      - "${QDRANT_PORT:-6333}:6333"
+    volumes:
+      - qdrant_data:/qdrant/storage
+    environment:
+      TZ: America/Recife
+    networks:
+      - plataforma360
+  # ─────────────────────────────────────────────────────────────────────────────
+
 networks:
   plataforma360:
     name: plataforma360-network
@@ -114,3 +147,7 @@ volumes:
     name: plataforma360-core-var
   core_vendor:
     name: plataforma360-core-vendor
+  ollama_data:
+    name: plataforma360-ollama-data
+  qdrant_data:
+    name: plataforma360-qdrant-data

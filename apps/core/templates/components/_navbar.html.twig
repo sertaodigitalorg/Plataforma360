@@ -4,6 +4,7 @@
 {% set intelligenceActive = _route == 'dashboard' or _path starts with '/dashboard' or _path starts with '/batch-monitor' or _path starts with '/analytics' or _path starts with '/observability' or _path starts with '/logs' or _path starts with '/indicators' %}
 {% set dataActive = _path starts with '/admin/data-management' or _path starts with '/admin/tourist-spots' or _path starts with '/admin/events' or _path starts with '/admin/accommodations' or _path starts with '/admin/guides' or _path starts with '/admin/tourist-guides' or _path starts with '/admin/data-sources' or _path starts with '/exports' or _path starts with '/admin/analytics' %}
 {% set integrationsActive = _path starts with '/public-api/v1' or _path starts with '/mcp/v1' or _path starts with '/api/docs' or _path starts with '/webhooks' or _path starts with '/integrations' or _path == '/api' or _path starts with '/admin/integrations/metabase' %}
+{% set iaActive = _path starts with '/admin/ai' %}
 {% set platformActive = _path starts with '/architecture' or _path starts with '/infrastructure' or _path starts with '/settings' or _path starts with '/users' or _path starts with '/security' or _path starts with '/about' %}
 
 <style>
@@ -436,6 +437,28 @@
                         <li><h6 class="dropdown-header">BI & Warehouse · Fase 4</h6></li>
                         {{ navbar.dropdown_item('Metabase', 'Configuração e integração com a instância Metabase para analytics e dashboards.', 'graph-up', path('app_admin_metabase_config'), _path == '/admin/integrations/metabase', null, null, false, false) }}
                         {{ navbar.dropdown_item('APIs Analíticas', 'Endpoints analíticos do warehouse para consumo externo, apps e IA futura.', 'braces', '/api/analytics/indicadores', _path starts with '/api/analytics', null, null, false, false) }}
+                    </ul>
+                </li>
+
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle {{ iaActive ? 'active' }}" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bi bi-robot"></i>
+                        <span>IA</span>
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li><h6 class="dropdown-header">Assistência inteligente · Fase 5</h6></li>
+                        {{ navbar.dropdown_item('Assistente IA', 'Consulte dados, indicadores e warehouse em linguagem natural.', 'robot', path('app_admin_ai_assistant'), _path == '/admin/ai/assistant', null, null, false, false) }}
+                        {{ navbar.dropdown_item('Insights', 'Análises automáticas e recomendações geradas por IA.', 'stars', path('app_admin_ai_insights'), _path starts with '/admin/ai/insights', null, null, false, false) }}
+                        <li><hr class="dropdown-divider"></li>
+                        <li><h6 class="dropdown-header">Configuração de IA</h6></li>
+                        {{ navbar.dropdown_item('Modelos', 'Configure modelos Ollama (local) e OpenAI (externo).', 'cpu', path('app_admin_ai_models'), _path starts with '/admin/ai/models', null, null, false, false) }}
+                        {{ navbar.dropdown_item('Agentes', 'Agentes especializados por domínio com ferramentas configuráveis.', 'person-gear', path('app_admin_ai_agents'), _path starts with '/admin/ai/agents', null, null, false, false) }}
+                        {{ navbar.dropdown_item('Contextos', 'Defina fontes de dados disponíveis por consulta de IA.', 'layers', path('app_admin_ai_contexts'), _path starts with '/admin/ai/contexts', null, null, false, false) }}
+                        {{ navbar.dropdown_item('Prompts', 'Registro de templates de prompts reutilizáveis.', 'chat-quote', path('app_admin_ai_prompts'), _path starts with '/admin/ai/prompts', null, null, false, false) }}
+                        <li><hr class="dropdown-divider"></li>
+                        <li><h6 class="dropdown-header">Governança</h6></li>
+                        {{ navbar.dropdown_item('Logs de IA', 'Auditoria completa de todas as interações com IA.', 'clock-history', path('app_admin_ai_logs'), _path starts with '/admin/ai/logs', null, null, false, false) }}
+                        {{ navbar.dropdown_item('Configurações', 'Status do Ollama, modelos disponíveis e resumo de uso.', 'gear', path('app_admin_ai_settings'), _path starts with '/admin/ai/settings', null, null, false, false) }}
                     </ul>
                 </li>
 
