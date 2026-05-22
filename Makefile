@@ -1,9 +1,12 @@
 SHELL := /bin/sh
 COMPOSE := docker compose
-KESTRA_COMPOSE := docker compose -f docker-compose.kestra.yml
 PHP := $(COMPOSE) exec php
 
-.PHONY: install up down restart logs bash migrate kestra-up kestra-down kestra-logs kestra-restart
+.PHONY: install up down restart logs bash migrate \
+        up-ai down-ai \
+        up-ops down-ops \
+        up-all down-all \
+        kestra-logs kestra-restart
 
 install:
 	cp -n .env.example .env || true
@@ -11,6 +14,7 @@ install:
 	$(COMPOSE) up -d
 	$(PHP) php bin/console doctrine:migrations:migrate --no-interaction || true
 
+# Sobe apenas os serviços core (Symfony, PostgreSQL, Nginx, Metabase)
 up:
 	$(COMPOSE) up -d
 
@@ -29,14 +33,29 @@ bash:
 migrate:
 	$(PHP) php bin/console doctrine:migrations:migrate --no-interaction
 
-kestra-up:
-	$(KESTRA_COMPOSE) up -d
+# Perfil AI: Ollama + Qdrant
+up-ai:
+	$(COMPOSE) --profile ai up -d
 
-kestra-down:
-	$(KESTRA_COMPOSE) down
+down-ai:
+	$(COMPOSE) --profile ai down
+
+# Perfil Ops: Kestra + kestra-postgres
+up-ops:
+	$(COMPOSE) --profile ops up -d
+
+down-ops:
+	$(COMPOSE) --profile ops down
 
 kestra-logs:
-	$(KESTRA_COMPOSE) logs -f --tail=200
+	$(COMPOSE) --profile ops logs -f kestra --tail=200
 
 kestra-restart:
-	$(KESTRA_COMPOSE) restart
+	$(COMPOSE) --profile ops restart kestra
+
+# Sobe tudo: core + AI + Ops
+up-all:
+	$(COMPOSE) --profile ai --profile ops up -d
+
+down-all:
+	$(COMPOSE) --profile ai --profile ops down
