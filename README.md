@@ -1,75 +1,60 @@
 # Plataforma360
 
-Plataforma360 e a base open source instalavel do projeto Olinda360: uma GovTech para inteligencia territorial, turismo inteligente, APIs publicas, analytics, dados abertos e interoperabilidade municipal.
+Plataforma360 é a base open source instalável do projeto Olinda360: uma GovTech para inteligência territorial, turismo inteligente, APIs públicas, analytics, dados abertos e interoperabilidade municipal.
 
-A plataforma nao e SaaS. O objetivo e permitir que prefeituras, laboratorios de inovacao e equipes tecnicas instalem o ambiente localmente ou em VPS propria, mantendo autonomia sobre dados, infraestrutura e evolucao.
+A plataforma não é SaaS. O objetivo é permitir que prefeituras, laboratórios de inovação e equipes técnicas instalem o ambiente localmente ou em VPS própria, mantendo autonomia sobre dados, infraestrutura e evolução.
 
 ## Arquitetura
 
-O desenho da Plataforma360 separa governanca, dados, BI, observabilidade e automacoes especializadas para evitar sobreposicao de funcoes.
+O desenho da Plataforma360 separa governança, dados, BI, IA e automações para evitar sobreposição de funções.
 
 ```mermaid
 flowchart TD
-	fontes[Fontes publicas e sistemas municipais]
-	iot[IoT Hub<br/>Sensores, MQTT e telemetria<br/>trilha futura]
+    fontes[Fontes públicas e sistemas municipais]
+    iot[IoT Hub\nSensores, MQTT e telemetria\ntrilha futura]
 
-	subgraph governanca [Portal Central]
-		symfony[Symfony<br/>Governanca, usuarios, permissoes,<br/>cadastros, links e embeds]
-		apps[Apps<br/>Modulos, APIs e servicos digitais]
-		shared[Shared<br/>Autenticacao, contratos,<br/>seguranca e padroes comuns]
-	end
+    subgraph governanca [Portal Central — Symfony]
+        symfony[Symfony 7.4 / PHP 8.3\nGovernança, IA, Operações,\ncadastros, APIs e embeds]
+    end
 
-	subgraph dados [Data Platform]
-		kestra[Kestra<br/>Ingestao, ETL/ELT,<br/>agendamento e jobs]
-		minio[MinIO<br/>Data Lake e arquivos brutos]
-		postgres[PostgreSQL<br/>Metadados, dados estruturados<br/>e configuracoes]
-		metabase[Metabase<br/>BI, dashboards e analytics]
-	end
+    subgraph dados [Data Platform]
+        kestra[Kestra\nIngestão, ETL/ELT,\nagendamento — perfil ops]
+        postgres[PostgreSQL\nWarehouse, staging,\nmetadados]
+        metabase[Metabase\nBI e dashboards]
+    end
 
-	subgraph operacao [Automacao e Observabilidade]
-		n8n[n8n<br/>AI Hub, webhooks,<br/>automacoes operacionais]
-		grafana[Grafana<br/>Logs, metricas,<br/>alertas e saude tecnica]
-	end
+    subgraph ia [IA Local]
+        ollama[Ollama\nLLM local — perfil ai]
+        qdrant[Qdrant\nBanco vetorial — perfil ai]
+    end
 
-	fontes --> kestra
-	iot -. ingestao futura .-> kestra
-	kestra --> minio
-	kestra --> postgres
-	postgres --> metabase
-	symfony --> kestra
-	symfony --> metabase
-	apps --> shared
-	symfony --> shared
-	n8n --> symfony
-	n8n --> apps
-	grafana -. monitora .-> symfony
-	grafana -. monitora .-> kestra
-	grafana -. monitora .-> n8n
-	grafana -. monitora .-> postgres
-	grafana -. monitora .-> minio
+    subgraph futuro [Futuro]
+        grafana[Grafana\nObservabilidade técnica]
+        n8n[n8n\nAI Hub, automações]
+    end
+
+    fontes --> kestra
+    iot -. ingestão futura .-> kestra
+    kestra --> postgres
+    postgres --> metabase
+    symfony --> kestra
+    symfony --> metabase
+    symfony --> ollama
+    symfony --> qdrant
+    ollama --> qdrant
+    grafana -. futuro .-> symfony
+    n8n -. futuro .-> symfony
 ```
 
-- `Symfony`: portal central de governanca e configuracao da plataforma.
-- `Kestra`: orquestracao de dados, ingestao, ETL/ELT e automacoes tecnicas.
-- `Metabase`: BI, dashboards e analytics de negocio.
-- `Grafana`: observabilidade tecnica, logs, metricas e alertas.
-- `PostgreSQL`: banco relacional principal e banco de metadados.
-- `MinIO`: armazenamento de objetos e data lake.
-- `n8n`: AI Hub e automacoes operacionais fora da data platform.
-- `IoT Hub`: trilha futura para sensores, telemetria e eventos.
-- `Apps`: modulos funcionais da plataforma.
-- `Shared`: autenticacao, contratos, seguranca, observabilidade compartilhada e padroes comuns.
-
-Detalhamento arquitetural oficial em `docs/arquitetura.md`.
+Detalhamento arquitetural completo em [docs/arquitetura.md](docs/arquitetura.md).
 
 ## Requisitos
 
 - Git
-- Docker
-- Docker Compose v2
-- Make, em Linux/macOS ou WSL
+- Docker + Docker Compose v2
+- Make (Linux/macOS/WSL)
 
-## Instalacao
+## Instalação
 
 ```bash
 git clone <repo-url> Plataforma360
@@ -78,87 +63,130 @@ cp .env.example .env
 make install
 ```
 
-Apos subir o ambiente:
+Após subir o ambiente:
 
-- Aplicacao: http://localhost:8080
-- OpenAPI/Swagger: http://localhost:8080/api
-- Healthcheck: http://localhost:8080/health
-- Adminer: http://localhost:8081
+| URL | Serviço |
+|---|---|
+| http://localhost | Portal Symfony |
+| http://localhost/api | OpenAPI / Swagger |
+| http://localhost/health | Healthcheck |
+| http://localhost:3000 | Metabase |
 
-Credenciais padrao do banco:
+Credenciais padrão do banco: servidor `postgres`, banco/usuário/senha `app`.
 
-- Servidor: `postgres`
-- Banco: `plataforma360`
-- Usuario: `plataforma360`
-- Senha: `plataforma360`
+Consulte [docs/instalacao.md](docs/instalacao.md) para o guia completo de instalação.
 
-## Data Platform com Kestra
+## Perfis Docker
 
-O Kestra passa a ser a camada inicial de ingestao, automacao de pipelines e orquestracao de dados da Plataforma360. Ele roda em stack separada no arquivo `docker-compose.kestra.yml`, preservando o ambiente principal do Symfony e mantendo a arquitetura modular.
-
-Papel de cada componente na trilha de dados:
-
-- `Kestra`: agenda, executa e monitora fluxos de ingestao e automacao.
-- `MinIO`: recebe os arquivos brutos e historico de ingestao.
-- `PostgreSQL`: recebe dados tratados, metadados e configuracoes estruturadas.
-- `Metabase`: consome dados tratados para indicadores, dashboards e analytics de negocio.
-- `Symfony + API Platform`: expoe servicos, APIs publicas, governanca e interfaces operacionais sobre os dados tratados.
-- `Grafana`: monitora a saude tecnica da stack.
-- `n8n`: permanece no AI Hub para automacoes operacionais, webhooks e IA.
-
-Subida local do Kestra:
+A plataforma usa perfis Docker para ativar serviços opcionais:
 
 ```bash
-docker compose -f docker-compose.kestra.yml up -d
+make up        # Core: Symfony, PostgreSQL, Nginx, Metabase
+make up-ai     # Core + Ollama (11434) + Qdrant (6333)
+make up-ops    # Core + Kestra (8082) + kestra-postgres
+make up-all    # Tudo: Core + IA + Ops
 ```
 
-Com o stack ativo:
-
+Com o perfil `ops` ativo:
 - Kestra UI: http://localhost:8082/ui/
-- Compose modular: `docker-compose.kestra.yml`
-- Fluxo inicial de exemplo: `future/kestra/flows/olinda360_primeira_ingestao.yml`
-- Manual operacional: `docs/manual-kestra.md`
+- Flows de exemplo: `future/kestra/flows/`
+- Manual técnico: [docs/manual-kestra.md](docs/manual-kestra.md)
 
-## Comandos Docker
+Com o perfil `ai` ativo:
+- Ollama API: http://localhost:11434
+- Qdrant Dashboard: http://localhost:6333/dashboard
+- Manual técnico: [docs/manual-ia.md](docs/manual-ia.md)
+
+## Comandos Make
 
 ```bash
-make up       # sobe os containers
-make down     # para os containers
-make restart  # reinicia os containers
-make logs     # acompanha logs
-make bash     # shell no container PHP
-make migrate  # executa migrations Doctrine
-make kestra-up       # sobe o stack modular do Kestra
-make kestra-down     # para o stack do Kestra
-make kestra-logs     # acompanha logs do Kestra
-make kestra-restart  # reinicia o stack do Kestra
+make up          # Sobe os containers core
+make down        # Para os containers
+make restart     # Reinicia os containers
+make logs        # Acompanha logs
+make bash        # Shell no container PHP
+make migrate     # Executa migrations Doctrine
+
+make up-ai       # Sobe Ollama + Qdrant
+make down-ai     # Para Ollama + Qdrant
+make up-ops      # Sobe Kestra + kestra-postgres
+make down-ops    # Para Kestra
+make up-all      # Sobe tudo
+make down-all    # Para tudo
+
+make kestra-logs     # Logs do Kestra
+make kestra-restart  # Reinicia o Kestra
 ```
 
-## Estrutura
+## Estrutura do Projeto
 
 ```text
 Plataforma360/
-├── apps/core/
-├── infra/
-├── docs/
-├── scripts/
-├── data/
+├── apps/core/          ← Aplicação Symfony principal
+│   ├── src/            ← PHP: entidades, services, controllers
+│   ├── templates/      ← Twig + Bootstrap 5.3
+│   ├── migrations/     ← Doctrine migrations versionadas
+│   └── assets/         ← JS/CSS via importmap
 ├── future/
+│   └── kestra/
+│       ├── flows/      ← Flows YAML do Kestra
+│       └── examples/   ← Dados de exemplo
+├── infra/              ← Nginx, PHP Dockerfile, PostgreSQL init
+├── docs/               ← Documentação completa (ver abaixo)
+├── data/               ← raw/, staging/, processed/
+├── storage/            ← Arquivos físicos ingeridos
+├── .github/            ← Agentes, skills e instructions do Copilot
 ├── docker-compose.yml
-├── .env.example
 ├── Makefile
-└── README.md
+└── .env.example
 ```
 
-## Roadmap Inicial
+## Fases Implementadas
 
-1. Consolidar modelo territorial e catalogo de dados publicos.
-2. Evoluir APIs publicas versionadas e documentadas por OpenAPI.
-3. Adicionar dashboards territoriais e turisticos.
-4. Integrar observabilidade com logs, metricas e traces.
-5. Preparar camada MCP e IA para consulta contextual aos dados municipais.
-6. Implantar conectores de interoperabilidade com sistemas publicos.
+| Fase | Descrição | Status |
+|---|---|---|
+| 1 | Core instalável (Docker, Symfony, PostgreSQL) | ✅ |
+| 2 | Dados territoriais e pipeline CKAN | ✅ |
+| 3 | Analytics e catálogo de datasets | ✅ |
+| 4 | Data Warehouse, Metabase, APIs analíticas | ✅ |
+| 5 | IA híbrida (Ollama local + OpenAI) | ✅ |
+| 6 | Operações, Governança, Observabilidade | ✅ |
+| 7 | Realtime, Event Bus, IoT Hub | Futuro |
+| 8 | Interoperabilidade e IA Avançada | Futuro |
 
-## Licenca
+Roadmap detalhado em [docs/roadmap.md](docs/roadmap.md).
 
-Distribuicao prevista como projeto open source para instalacao local por municipios e comunidades tecnicas.
+## Documentação
+
+| Documento | Público | Descrição |
+|---|---|---|
+| [docs/instalacao.md](docs/instalacao.md) | Dev / DevOps | Guia completo de instalação e configuração |
+| [docs/arquitetura.md](docs/arquitetura.md) | Dev / Arquiteto | Decisões arquiteturais, matriz de responsabilidades |
+| [docs/manual-usuario.md](docs/manual-usuario.md) | Gestor público | Passo a passo de uso: da ingestão aos dashboards e IA |
+| [docs/manual-kestra.md](docs/manual-kestra.md) | Dev / Ops | Manual técnico do Kestra: flows, API, integração Symfony |
+| [docs/manual-ia.md](docs/manual-ia.md) | Dev / Técnico | Manual técnico da IA: Ollama, Qdrant, modelos, contextos |
+| [docs/manual-agentes.md](docs/manual-agentes.md) | Dev | Guia de uso dos agentes e skills do GitHub Copilot |
+| [docs/roadmap.md](docs/roadmap.md) | Time de produto | Fases implementadas e planejadas |
+
+## Agentes Copilot
+
+O projeto inclui agentes e skills do GitHub Copilot configurados em `.github/` para acelerar o desenvolvimento:
+
+```
+@Plataforma360        → Agente principal (orquestrador)
+@Backend Symfony      → Entidades, services, controllers, migrations
+@Frontend Twig        → Templates, componentes Bootstrap, navbar
+@Dados e Pipeline     → CKAN, warehouse, flows Kestra
+@Módulo IA            → Ollama, OpenAI, Qdrant, embeddings
+@Operações e Governança → Pipelines, alertas, LGPD, auditoria
+
+/nova-entidade        → Criar entidade + repository + migration
+/novo-modulo          → Criar módulo CRUD completo
+/kestra-flow          → Criar flow Kestra + registrar no portal
+```
+
+Manual completo em [docs/manual-agentes.md](docs/manual-agentes.md).
+
+## Licença
+
+Distribuição prevista como projeto open source para instalação local por municípios e comunidades técnicas.

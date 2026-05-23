@@ -284,28 +284,49 @@ Para cada camada, você vê a contagem de itens processados e se está ativa.
 
 ## Fase 5 — Inteligência Artificial Híbrida
 
-> **Pré-requisito:** iniciar com o perfil `ai`: `docker compose --profile ai up -d`
+> **Pré-requisito:** iniciar com o perfil `ai`: `docker compose --profile ai up -d` (ou `make up-ai`)
+
+---
 
 ### 17. Usar o Assistente de IA
 
 **Menu:** IA → Assistente
 
-O assistente permite fazer perguntas em linguagem natural sobre os dados da plataforma.
+O assistente permite fazer perguntas sobre os dados da plataforma em português, sem precisar saber SQL.
 
-**Como usar:**
+#### O que aparece na tela
+
+- **Área central:** histórico da conversa (pergunta + resposta)
+- **Barra lateral esquerda:**
+  - Seletor de **Modelo** (Ollama local ou OpenAI)
+  - Seletor de **Contexto** (quais dados o assistente pode ver)
+  - Seletor de **Agente** (especialização temática)
+- **Rodapé:** campo de texto para digitar a pergunta + botão Enviar
+- **Quick prompts:** botões de atalho para perguntas comuns
+
+#### Passo a passo
+
 1. Acesse **IA → Assistente**
-2. Selecione na barra lateral:
-   - **Modelo:** Ollama local (gratuito, soberano) ou OpenAI (externo, pago)
-   - **Contexto:** define quais dados o assistente pode consultar
-   - **Agente:** especialização do assistente (turismo, executivo, técnico, etc.)
-3. Digite sua pergunta, ex: *"Quantas agências de turismo estão cadastradas por estado?"*
-4. O assistente consulta o warehouse e responde em linguagem natural
+2. Na barra lateral, selecione:
+   - **Modelo:** escolha `Llama 3 Local` para consultas internas sem custo, ou um modelo OpenAI para respostas mais elaboradas
+   - **Contexto:** selecione `Turismo Público` para dados de agências/municípios. Se não houver contexto configurado, o assistente responde sem acesso ao warehouse
+   - **Agente:** `Analista de Turismo` para perguntas setoriais, `Executivo` para resumos gerenciais
+3. Digite sua pergunta no campo de texto:
+   - ✅ *"Quantas agências de turismo existem no Nordeste?"*
+   - ✅ *"Quais os 5 estados com mais agências cadastradas?"*
+   - ✅ *"Gere um resumo executivo dos indicadores de turismo"*
+4. Clique em **Enviar** ou pressione Enter
+5. Aguarde a resposta — o indicador de latência (ms) aparece ao lado da resposta
 
-**Quick prompts disponíveis:**
-- Análise de indicadores de turismo
-- Relatório executivo mensal
-- Qualidade dos dados por dataset
-- Comparativo territorial
+#### Indicadores visuais
+
+| Ícone/Badge | Significado |
+|---|---|
+| 🟢 Local | Resposta via Ollama — dados não saíram do servidor |
+| 🔴 Externo | Resposta via OpenAI — interação auditada e com custo |
+| ⏱ Xms | Tempo de resposta em milissegundos |
+
+> **Dado sensível?** Se o contexto tiver `Permitido para externo = Não`, o sistema bloqueia automaticamente o envio para OpenAI e exibe uma mensagem de aviso.
 
 ---
 
@@ -313,215 +334,540 @@ O assistente permite fazer perguntas em linguagem natural sobre os dados da plat
 
 **Menu:** IA → Modelos
 
-**Como adicionar um modelo Ollama (local):**
+Lista todos os modelos cadastrados com provedor, status e se é o padrão.
+
+#### Como adicionar um modelo Ollama (local — sem custo)
+
 1. Acesse **IA → Modelos → Novo Modelo**
-2. Provedor: `ollama`
-3. Nome do modelo: `llama3`, `mistral`, `codellama`, etc.
-4. Endpoint: `http://ollama:11434` (padrão)
-5. Marque **Modelo padrão** se for o principal
-6. Salve
+2. Preencha:
 
-> Para baixar o modelo: `docker compose exec ollama ollama pull llama3`
+| Campo | Valor exemplo |
+|---|---|
+| Nome | `Llama 3 Local` |
+| Provedor | `local_ollama` |
+| Nome do Modelo | `llama3` *(deve ser idêntico ao nome no Ollama)* |
+| Endpoint | `http://ollama:11434` |
+| Temperature | `0.7` *(0 = preciso, 1 = criativo)* |
+| Max Tokens | `2048` |
+| Modelo Padrão | ✓ |
 
-**Como adicionar OpenAI (externo):**
+3. Salve
+
+> **Modelos disponíveis no Ollama:** `llama3`, `mistral`, `codellama`, `gemma`. Para baixar: acesse o terminal e execute `docker compose exec ollama ollama pull llama3`
+
+#### Como adicionar OpenAI (externo — tem custo)
+
 1. Provedor: `openai`
-2. Nome do modelo: `gpt-4o-mini`, `gpt-4o`
-3. Cole a API Key no campo correspondente
-4. Atenção: interações externas têm custo e são auditadas
+2. Nome do Modelo: `gpt-4o-mini` *(mais barato)* ou `gpt-4o` *(mais capaz)*
+3. Cole a **API Key** no campo — ela é criptografada ao salvar
+4. Deixe Endpoint vazio (usa o padrão OpenAI)
+5. Salve
+
+> ⚠️ Toda interação com OpenAI é registrada em **IA → Logs** com custo estimado em USD.
+
+#### Ações na listagem
+
+- **Editar:** alterar configurações do modelo
+- **Testar:** envia uma pergunta simples para verificar se o modelo responde
+- **Desativar:** remove da seleção do assistente sem excluir
 
 ---
 
-### 19. Gerenciar Agentes Especializados
+### 19. Configurar Contextos de IA
+
+**Menu:** IA → Contextos
+
+Contextos definem **quais dados** o assistente pode acessar. É a camada de segurança que impede vazamento de dados sensíveis para provedores externos.
+
+#### Como criar um contexto
+
+1. Acesse **IA → Contextos → Novo Contexto**
+2. Preencha:
+
+| Campo | Descrição | Exemplo |
+|---|---|---|
+| Nome | Nome de exibição | `Turismo Público` |
+| Fontes de Dados | O que o assistente pode consultar | `warehouse`, `indicators` |
+| Tabelas do Warehouse | Tabelas específicas acessíveis | `warehouse.dw_agencias_turismo` |
+| Permitido para externo | Libera envio ao OpenAI | ✗ para dados sensíveis |
+| Máximo de linhas | Limite de linhas carregadas no contexto | `100` |
+
+#### Fontes de dados disponíveis
+
+| Fonte | O que inclui |
+|---|---|
+| `warehouse` | Tabelas analíticas processadas |
+| `catalog` | Catálogo de datasets (CKAN) |
+| `indicators` | KPIs executivos |
+| `analytics_api` | APIs `/api/analytics/*` |
+| `lineage` | Linhagem de dados por camada |
+| `quality` | Relatórios de qualidade |
+
+---
+
+### 20. Gerenciar Templates de Prompts
+
+**Menu:** IA → Prompts
+
+Templates são instruções pré-definidas com variáveis `{{estado}}`, `{{periodo}}`, `{{dataset}}` que o assistente preenche automaticamente.
+
+#### Como criar um template
+
+1. Acesse **IA → Prompts → Novo Template**
+2. Preencha:
+
+| Campo | Descrição |
+|---|---|
+| Nome | Identificação do template |
+| Finalidade | Categoria (análise, relatório, diagnóstico, etc.) |
+| Template do Prompt | Texto com `{{variáveis}}` nos pontos que mudam |
+| Versão | Controle de versão (incremente ao alterar substancialmente) |
+
+#### Finalidades disponíveis
+
+| Finalidade | Quando usar |
+|---|---|
+| Análise de indicadores | Perguntas sobre KPIs e métricas |
+| Geração de relatório | Documentos estruturados |
+| Resumo executivo | Síntese para gestores |
+| Comparativo territorial | Comparação entre estados/municípios |
+| Diagnóstico de qualidade | Avaliar completude e consistência dos dados |
+| Assistente geral | Conversação livre |
+| NL-to-SQL | Conversão de pergunta em consulta SQL |
+
+---
+
+### 21. Gerenciar Agentes Especializados
 
 **Menu:** IA → Agentes
 
-Agentes são configurações especializadas por domínio com ferramentas específicas.
+Agentes são combinações de modelo + contexto + prompt que criam assistentes focados em um domínio.
 
-| Agente | Especialidade | Ferramentas |
+#### Como criar um agente
+
+1. Acesse **IA → Agentes → Novo Agente**
+2. Preencha:
+
+| Campo | Descrição |
+|---|---|
+| Nome | Nome de exibição (ex: `Analista de Turismo`) |
+| Tipo | `turismo`, `dados_publicos`, `executivo`, `tecnico` |
+| Modelo Padrão | Modelo de IA que o agente usa |
+| Contexto Padrão | Contexto de dados associado |
+| Template de Prompt | System prompt que define o comportamento |
+| Ferramentas | Ações que o agente pode executar |
+
+#### Agentes pré-configurados
+
+| Agente | Tipo | Especialidade |
 |---|---|---|
-| Turismo | Dados do setor de turismo | buscar_indicadores, consultar_warehouse |
-| Dados Públicos | Catálogo CKAN | listar_datasets, obter_qualidade |
-| Executivo | Relatórios de gestão | gerar_relatorio, comparativo territorial |
-| Técnico | Qualidade e linhagem | obter_linhagem_dataset, consulta SQL |
+| Analista de Turismo | turismo | Agências, destinos, indicadores setoriais |
+| Analista de Dados | dados_publicos | Catálogo CKAN, qualidade, linhagem |
+| Assistente Executivo | executivo | Resumos, relatórios, comparativos |
+| Técnico de Dados | tecnico | SQL, qualidade, diagnóstico técnico |
 
 ---
 
-### 20. Consultar Logs de IA
+### 22. Consultar Logs de IA
 
 **Menu:** IA → Logs
 
-Exibe todas as interações com o assistente, incluindo:
-- Provedor e modelo utilizado
-- Tokens consumidos (entrada + saída)
-- Custo estimado em USD
-- Status (sucesso/falha)
-- Se foi via provedor externo
+Exibe o histórico completo de todas as interações com o assistente.
+
+#### Colunas da listagem
+
+| Coluna | Descrição |
+|---|---|
+| Data/Hora | Quando ocorreu a interação |
+| Usuário | Quem fez a pergunta |
+| Provedor | `local_ollama` ou `openai` |
+| Modelo | Nome do modelo utilizado |
+| Tokens entrada | Tokens da pergunta |
+| Tokens saída | Tokens da resposta |
+| Custo (USD) | Estimativa de custo ($0.00 para Ollama) |
+| Duração | Tempo de resposta em ms |
+| Status | `success` (verde), `failed` (vermelho) |
+| Externo | 🔴 se foi enviado para OpenAI |
+
+#### Como usar para controle
+
+- Monitore **custos acumulados** de OpenAI pelo campo Custo (USD)
+- Identifique **perguntas que falharam** pelo status `failed` e a mensagem de erro
+- Verifique **quem usou IA externa** pelo badge "Externo"
 
 ---
 
 ## Fase 6 — Operações e Governança
 
-### 21. Visão Geral de Operações
+### 23. Visão Geral de Operações
 
 **Menu:** Operações → Visão Geral
 
-Dashboard com KPIs operacionais em tempo real:
-- Pipelines ativos / falhas hoje
-- Alertas críticos
-- Status geral dos serviços
-- Execuções recentes
-- Alertas recentes
+Dashboard com a situação operacional em tempo real.
+
+#### Cards de KPI (linha superior)
+
+| Card | O que mostra |
+|---|---|
+| Pipelines Ativos | Total de pipelines com status `active` |
+| Falhas Hoje | Execuções com status `failed` nas últimas 24h |
+| Alertas Críticos | Alertas com nível `critical` e status `active` |
+| Saúde Geral | `healthy` / `degraded` / `down` com base em todos os serviços |
+
+#### Seção de saúde dos serviços
+
+Grid com o status atual de cada serviço: Symfony, PostgreSQL, Kestra, Ollama, Qdrant, Metabase, Storage. Cada card exibe:
+- Status (verde/amarelo/vermelho)
+- Informação complementar (versão, latência, modelos carregados)
 
 ---
 
-### 22. Gerenciar Pipelines
+### 24. Gerenciar Pipelines
 
 **Menu:** Operações → Pipelines
 
-Pipelines são fluxos de dados orquestrados pelo Kestra.
+Lista de pipelines cadastrados com tipo, trigger, status e última execução.
 
-**Como cadastrar um pipeline:**
+#### Como cadastrar um pipeline
+
 1. Acesse **Operações → Pipelines → Novo Pipeline**
 2. Preencha:
-   - **Nome** e **Tipo** (ingestão, transformação, warehouse, embeddings, etc.)
-   - **Trigger** (manual, cron, evento, webhook)
-   - **Cron Expression** (se agendado, ex: `0 2 * * *`)
-   - **Kestra Namespace** (ex: `plataforma360`)
-   - **Kestra Flow ID** (ex: `ingestao-ckan-turismo`)
-   - **Kestra YAML** (definição do flow para referência)
-3. Salve
 
-**Para disparar manualmente:**
-- Clique no botão ▶ na linha do pipeline
-- A execução aparece em **Operações → Execuções**
+| Campo | Obrigatório | Descrição |
+|---|---|---|
+| Nome | Sim | Nome descritivo (ex: `Ingestão CKAN Turismo`) |
+| Tipo | Sim | Categoria do pipeline (ver tabela abaixo) |
+| Trigger | Sim | Como é disparado |
+| Cron Expression | Se agendado | Expressão cron (ex: `0 2 * * *` = todo dia às 2h) |
+| Kestra Namespace | Sim | Namespace no Kestra (ex: `plataforma360`) |
+| Kestra Flow ID | Sim | ID do flow no Kestra (ex: `ingestao-ckan-turismo`) |
+| Dataset (Slug) | Não | Dataset associado ao pipeline |
+| Descrição | Não | Texto explicativo |
+| Kestra YAML | Não | Definição do flow para referência e versionamento |
+| Ativo | — | Ligado/Desligado |
 
-**Para pausar/retomar:**
-- Clique no botão ⏸/▶ na coluna de ações
+#### Tipos de pipeline
+
+| Tipo | Descrição |
+|---|---|
+| `ingestion` | Ingestão de dados de fontes externas |
+| `transformation` | Transformação STAGING → WAREHOUSE |
+| `warehouse_load` | Carga analítica no warehouse |
+| `embedding_generation` | Geração de embeddings para IA |
+| `quality_check` | Verificação de qualidade |
+| `export` | Exportação de dados |
+| `sync` | Sincronização com sistemas externos |
+
+#### Tipos de trigger
+
+| Trigger | Descrição |
+|---|---|
+| `manual` | Disparado manualmente pelo botão ▶ |
+| `cron` | Agendado por expressão cron |
+| `event` | Disparado por evento da plataforma |
+| `webhook` | Disparado por chamada HTTP externa |
+
+#### Ações na listagem
+
+| Botão | Ação |
+|---|---|
+| ▶ Disparar | Executa o pipeline no Kestra agora |
+| ⏸ Pausar | Pausa o flow no Kestra |
+| ✏ Editar | Editar cadastro |
+| 📄 YAML | Visualiza o YAML do flow |
+| 🗑 Excluir | Remove o pipeline (não remove o flow no Kestra) |
 
 ---
 
-### 23. Acompanhar Execuções
+### 25. Acompanhar Execuções
 
 **Menu:** Operações → Execuções
 
-Lista todas as execuções com:
-- Status (CREATED, RUNNING, SUCCESS, FAILED, CANCELLED)
-- Pipeline associado
-- Quem disparou e quando
-- Duração
+#### Colunas da listagem
 
-Clique no ícone 👁 para ver o **detalhe da execução** com:
-- Logs completos
-- Inputs e outputs
-- Mensagem de erro (se falhou)
-- Sync automático com o status no Kestra
+| Coluna | Descrição |
+|---|---|
+| Pipeline | Nome do pipeline executado |
+| Status | Status atual (ver tabela) |
+| Trigger | Como foi disparado (manual, cron, api, event) |
+| Disparado por | Usuário ou sistema que iniciou |
+| Início | Data/hora de início |
+| Fim | Data/hora de conclusão |
+| Duração | Tempo total em segundos |
+
+#### Status das execuções
+
+| Status | Cor | Significado |
+|---|---|---|
+| `CREATED` | Cinza | Criada, aguardando início |
+| `RUNNING` | Azul | Em execução no Kestra |
+| `SUCCESS` | Verde | Concluída com sucesso |
+| `FAILED` | Vermelho | Falhou — ver detalhe |
+| `CANCELLED` | Laranja | Cancelada manualmente |
+| `WARNING` | Amarelo | Concluída com avisos |
+
+#### Ver detalhe de uma execução
+
+1. Clique no ícone 👁 na linha da execução
+2. A tela de detalhe exibe:
+   - **Informações gerais:** pipeline, status, duração, quem disparou
+   - **Inputs:** parâmetros enviados ao Kestra
+   - **Outputs:** dados retornados pelo flow
+   - **Logs:** saída completa do Kestra (sincronizada via API)
+   - **Mensagem de erro:** se falhou, exibe o stack trace do Kestra
+
+> O status é sincronizado automaticamente com o Kestra ao abrir o detalhe.
 
 ---
 
-### 24. Observabilidade dos Serviços
+### 26. Observabilidade dos Serviços
 
 **Menu:** Operações → Observabilidade
 
-Verificação em tempo real da saúde de todos os serviços:
+Verifica a saúde de todos os serviços em tempo real. A página faz uma verificação ao carregar.
 
-| Serviço | O que é verificado |
-|---|---|
-| Symfony | Memória do processo PHP |
-| PostgreSQL | Latência, contagem de tabelas |
-| Kestra | Disponibilidade da API |
-| Ollama | Disponibilidade + modelos carregados |
-| Qdrant | Status da API |
-| Metabase | Status da API |
-| Storage | Diretórios raw/staging acessíveis |
+#### O que é verificado por serviço
+
+| Serviço | Verificação | O que indica problema |
+|---|---|---|
+| Symfony | Memória PHP atual | > 128MB pode indicar leak |
+| PostgreSQL | `SELECT version()` + contagem de tabelas | Timeout = banco inacessível |
+| Kestra | `GET /api/v1/flows` | Kestra offline ou perfil `ops` não iniciado |
+| Ollama | `GET /api/tags` | Ollama offline ou perfil `ai` não iniciado |
+| Qdrant | `GET /health` | Qdrant offline |
+| Metabase | `GET /api/health` | Metabase offline ou não configurado |
+| Storage | Verifica diretórios `storage/raw` e `storage/staging` | Disco cheio ou permissão negada |
+
+#### Status possíveis
+
+- 🟢 **healthy** — serviço respondendo normalmente
+- 🟡 **degraded** — respondendo mas com aviso
+- 🔴 **down** — serviço inacessível
 
 ---
 
-### 25. Gerenciar Alertas
+### 27. Gerenciar Alertas
 
 **Menu:** Operações → Alertas
 
-Alertas são gerados automaticamente por falhas de pipeline, serviços offline ou anomalias.
+Alertas são gerados automaticamente pelo sistema em caso de falha de pipeline, serviço offline ou anomalia detectada.
 
-**Ações disponíveis:**
-- **Reconhecer (✓):** marca como visto, registra o responsável
-- **Resolver (✓✓):** marca como resolvido
+#### Colunas da listagem
 
-Os níveis são: `info`, `warning`, `critical` — críticos aparecem destacados em vermelho.
+| Coluna | Descrição |
+|---|---|
+| Nível | `info` (azul), `warning` (amarelo), `critical` (vermelho) |
+| Tipo | Categoria do alerta |
+| Título | Descrição resumida |
+| Status | `active`, `acknowledged`, `resolved` |
+| Criado em | Data/hora do alerta |
+
+#### Tipos de alerta comuns
+
+| Tipo | Gerado quando |
+|---|---|
+| `pipeline_failed` | Uma execução falhou |
+| `pipeline_stuck` | Execução sem atualização por muito tempo |
+| `service_offline` | Serviço não responde na observabilidade |
+| `data_quality_low` | Score de qualidade abaixo do limite |
+| `storage_full` | Espaço em disco crítico |
+
+#### Fluxo de tratamento
+
+1. Alerta é criado com status `active`
+2. Responsável clica em **✓ Reconhecer** → status muda para `acknowledged`
+   - Registra quem reconheceu e quando
+3. Após resolver o problema, clica em **✓✓ Resolver** → status muda para `resolved`
+   - Registra a data/hora de resolução
+
+> Alertas `critical` ficam destacados no topo e aparecem no card da **Visão Geral de Operações**.
 
 ---
 
-### 26. Governança de Dados (LGPD)
+### 28. Governança de Dados (LGPD)
 
 **Menu:** Governança → Dados
 
-Registre a política de governança de cada dataset:
+Registre a política de governança de cada dataset conforme a LGPD.
+
+#### Como criar um registro
 
 1. Acesse **Governança → Dados → Novo Registro**
 2. Preencha:
-   - **Classificação:** público, interno, restrito, sensível
-   - **Sensibilidade:** nenhuma, baixa, média, alta
-   - **Aplica-se LGPD:** marque se o dataset contém dados pessoais
-   - **Base Legal LGPD:** consentimento, obrigação legal, interesse legítimo, etc.
-   - **Responsável (Owner)** e **Steward**
-   - **Retenção (dias):** política de retenção dos dados
+
+| Campo | Obrigatório | Descrição |
+|---|---|---|
+| Nome do Dataset | Sim | Identificação (ex: `agencias_turismo`) |
+| Classificação | Sim | Nível de acesso |
+| Sensibilidade | Sim | Impacto se exposto |
+| Aplica-se LGPD | — | Marcar se contém dados pessoais |
+| Base Legal LGPD | Se LGPD = sim | Fundamento jurídico |
+| Responsável (Owner) | Não | Gestor responsável |
+| Steward | Não | Responsável técnico pelos dados |
+| Retenção (dias) | Não | Política de retenção (ex: 365) |
+| Descrição | Não | Observações adicionais |
+
+#### Classificações
+
+| Nível | Descrição |
+|---|---|
+| `publico` | Pode ser publicado sem restrição |
+| `interno` | Uso interno da prefeitura |
+| `restrito` | Acesso limitado a equipes específicas |
+| `sensivel` | Dados pessoais ou estratégicos — máxima proteção |
+
+#### Sensibilidade
+
+| Nível | Descrição |
+|---|---|
+| `none` | Sem impacto se exposto |
+| `low` | Impacto baixo |
+| `medium` | Impacto moderado |
+| `high` | Impacto alto — pode violar LGPD ou segurança |
+
+#### Bases legais LGPD
+
+- Consentimento do titular
+- Obrigação legal
+- Interesse legítimo
+- Execução de contrato
+- Proteção à vida
+- Tutela da saúde
 
 ---
 
-### 27. Rastrear Custos
+### 29. Rastrear Custos de Serviços
 
 **Menu:** Governança → Custos
 
-Acompanhe os custos de serviços externos (principalmente OpenAI):
-- Total do mês atual em USD
-- Breakdown por serviço
-- Série diária dos últimos 30 dias
+Painel de custos financeiros de serviços externos (principalmente OpenAI).
 
-> Serviços locais como Ollama e Qdrant têm custo zero.
+#### O que é exibido
+
+| Seção | Descrição |
+|---|---|
+| Total do mês atual | Soma em USD de todos os serviços no mês corrente |
+| Breakdown por serviço | Custo separado por `openai`, `azure_openai`, `other` |
+| Série diária | Gráfico dos últimos 30 dias |
+
+#### Serviços e custos
+
+| Serviço | Custo |
+|---|---|
+| Ollama (local) | $0.00 — sempre |
+| Qdrant (local) | $0.00 — sempre |
+| OpenAI GPT-4o-mini | ~$0.15/1M tokens |
+| OpenAI GPT-4o | ~$5.00/1M tokens |
+
+> Os custos são registrados automaticamente a cada interação com o assistente de IA.
 
 ---
 
-### 28. Consultar Auditoria
+### 30. Consultar Trilha de Auditoria
 
 **Menu:** Governança → Auditoria
 
-Trilha completa de todas as ações administrativas:
-- **Filtro por ação:** `pipeline_run`, `config_change`, `ai_query`, etc.
-- **Filtro por usuário:** busca por e-mail ou identifier
-- Cada entrada registra: ação, descrição, entidade, usuário, IP e data/hora
+Registro imutável de todas as ações administrativas na plataforma.
+
+#### Filtros disponíveis
+
+- **Por ação:** selecione o tipo de ação
+- **Por usuário:** busca pelo e-mail ou identificador
+
+#### Tipos de ação registrados
+
+| Ação | Quando ocorre |
+|---|---|
+| `pipeline_run` | Pipeline disparado |
+| `config_change` | Configuração alterada |
+| `ai_query` | Consulta ao assistente de IA |
+| `ai_model_created` | Novo modelo de IA cadastrado |
+| `data_ingestion` | Ingestão de dados executada |
+| `user_login` | Login de usuário |
+| `admin_action` | Ação administrativa diversa |
+
+#### Colunas da trilha
+
+| Coluna | Descrição |
+|---|---|
+| Data/Hora | Quando ocorreu |
+| Ação | Tipo da ação |
+| Usuário | Quem realizou |
+| Entidade | Objeto afetado (pipeline, modelo, dataset) |
+| Descrição | Detalhe textual da ação |
+| IP | Endereço IP da requisição |
+
+> A trilha de auditoria é somente leitura — nenhum registro pode ser alterado ou excluído pelo portal.
+
+---
+
+### 31. Governança IA
+
+**Menu:** Governança → Governança IA
+
+Painel de uso de IA separado por provedor: **local (Ollama)** vs. **externo (OpenAI)**.
+
+#### O que é exibido
+
+- Total de interações por provedor (últimos 30 dias)
+- Taxa de uso local vs. externo (percentual)
+- Custo acumulado de provedores externos
+- Modelos mais utilizados
+- Falhas por provedor
+
+> O objetivo é maximizar o uso local (soberania de dados) e minimizar o uso externo (custo e privacidade).
 
 ---
 
 ## Resumo do Fluxo Completo (Fases 1–6)
 
 ```
-[1] Provedor CKAN
-    ↓ sincronizar pacotes
-[2] Pacotes CKAN
-    ↓ monitorar + baixar
-[3] Arquivos RAW
-    ↓ configurar mapeamento
-[4] Mapeamento de Colunas
-    ↓ executar transformação
-[5] STAGING (dados normalizados)
-    ↓ verificar qualidade
-[6] Relatório de Qualidade
-    ↓ criar modelo analítico
-[7] Modelo Analítico
-    ↓ executar transformação
-[8] WAREHOUSE (tabelas analíticas)
-    ↓ configurar Metabase
-[9] Metabase (conectado ao warehouse)
-    ↓ criar dashboards no Metabase
-    ↓ registrar na plataforma
-[10] Dashboards incorporados
-     ↓
-[11] Indicadores + APIs Analíticas
-     ↓
-[12] Assistente de IA (consulta warehouse em linguagem natural)
-     ↓
-[13] Pipelines Kestra (orquestração automatizada)
-     ↓
-[14] Operações + Alertas + Observabilidade
-     ↓
-[15] Governança LGPD + Auditoria + Custos
+[1]  Cadastrar Provedor CKAN
+     ↓ sincronizar pacotes
+[2]  Selecionar Pacotes para Monitoramento
+     ↓ baixar arquivos
+[3]  Executar Ingestão → storage/raw/
+     ↓ preview
+[4]  Preview do Dataset (schema detectado)
+     ↓ mapear colunas
+[5]  Configurar Mapeamento de Colunas
+     ↓ transformar
+[6]  Executar Transformação → STAGING
+     ↓ verificar qualidade
+[7]  Verificar Qualidade dos Dados (score 0–100%)
+     ↓ catálogo
+[8]  Visualizar Catálogo de Datasets
+     ↓ modelo analítico
+[9]  Criar Modelo Analítico
+     ↓ executar ▶
+[10] Executar Transformação → WAREHOUSE
+     ↓ conectar BI
+[11] Configurar Integração Metabase
+     ↓ dashboards
+[12] Registrar Dashboards
+[13] Abrir Dashboard Incorporado (iframe)
+[14] Visualizar Indicadores Executivos
+[15] Usar APIs Analíticas (/api/analytics/*)
+[16] Visualizar Linhagem de Dados
+
+── FASE 5 — INTELIGÊNCIA ARTIFICIAL ──────────────────────
+
+[17] Usar Assistente de IA (pergunta em português)
+[18] Configurar Modelos (Ollama local / OpenAI externo)
+[19] Configurar Contextos (quais dados a IA pode ver)
+[20] Gerenciar Templates de Prompts ({{variáveis}})
+[21] Gerenciar Agentes Especializados (turismo, executivo...)
+[22] Consultar Logs de IA (custo, tokens, auditoria)
+
+── FASE 6 — OPERAÇÕES E GOVERNANÇA ───────────────────────
+
+[23] Visão Geral de Operações (KPIs + saúde dos serviços)
+[24] Gerenciar Pipelines Kestra (CRUD + disparar + pausar)
+[25] Acompanhar Execuções (detalhe + logs Kestra)
+[26] Observabilidade dos Serviços (saúde em tempo real)
+[27] Gerenciar Alertas (reconhecer + resolver)
+[28] Governança de Dados LGPD (classificação + retenção)
+[29] Rastrear Custos (OpenAI e serviços externos)
+[30] Trilha de Auditoria (filtro por ação e usuário)
+[31] Governança IA (local vs. externo)
 ```
