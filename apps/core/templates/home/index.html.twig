@@ -61,6 +61,11 @@
         background: #122033;
         color: #fff;
     }
+
+    .page-shell .container-fluid {
+        padding-left: 20px !important;
+        padding-right: 20px !important;
+    }
 </style>
 {% endblock %}
 
@@ -77,7 +82,7 @@
 <div class="page-shell">
     <main>
         <section class="hero">
-            <div class="container">
+            <div class="container-fluid px-4">
                 <div class="row align-items-center g-5">
                     <div class="col-lg-8">
                         <p class="hero-subtitle text-uppercase mb-3">GovTech Open Source</p>
@@ -100,7 +105,7 @@
         </section>
 
         <section class="pb-5">
-            <div class="container">
+            <div class="container-fluid">
                 <div class="row g-4">
                     {% for module in modules %}
                         <div class="col-12 col-md-6 col-xl-4">
@@ -116,7 +121,7 @@
         </section>
 
         <section class="ops-band py-4">
-            <div class="container d-flex flex-wrap gap-3 justify-content-between align-items-center">
+            <div class="container-fluid d-flex flex-wrap gap-3 justify-content-between align-items-center">
                 <span>Core: Symfony, API Platform, Doctrine, Twig e Bootstrap 5</span>
                 <span>Infra: Nginx, PHP-FPM 8.3, PostgreSQL 16, PostGIS e Adminer</span>
             </div>

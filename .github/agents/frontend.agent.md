@@ -52,6 +52,41 @@ apps/core/assets/
 - **Tabelas:** `table table-hover align-middle`
 - **Badges:** Bootstrap (`bg-success`, `bg-danger`, `bg-warning`, `bg-secondary`, `bg-info`)
 
+### 4. Margens laterais — padrão 20px (obrigatório)
+
+O `base.html.twig` aplica automaticamente `padding-left: 20px; padding-right: 20px` via CSS global para alinhar o conteúdo com a logo e os itens do navbar.
+
+**Regra: NUNCA usar `container` do Bootstrap** — ele adiciona margens automáticas que quebram o alinhamento.
+
+| Tipo de wrapper | Usar |
+|---|---|
+| Hub pages | `<section class="py-4 py-lg-5">` (sem container interno) |
+| Páginas CRUD/listagem | `<div class="container-fluid py-4">` |
+| Página com `{% block main %}` | Usa o `<main class="container-fluid app-main-container">` do base automaticamente |
+
+```twig
+{# ✅ CORRETO — hub page #}
+{% block body %}
+<section class="py-4 py-lg-5">
+  <div class="data-management-hero ...">...</div>
+</section>
+{% endblock %}
+
+{# ✅ CORRETO — listagem CRUD #}
+{% block body %}
+<div class="container-fluid py-4">
+  ...
+</div>
+{% endblock %}
+
+{# ❌ ERRADO — container Bootstrap quebra alinhamento com navbar #}
+{% block body %}
+<div class="container py-4">
+  ...
+</div>
+{% endblock %}
+```
+
 ## Template Base de Página Admin Comum
 
 ```twig

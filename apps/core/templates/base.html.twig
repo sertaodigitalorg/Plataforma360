@@ -17,9 +17,12 @@
                 }
             }
 
-            .app-main-container {
-                padding-left: 20px;
-                padding-right: 20px;
+            /* Padding lateral global — alinha com o navbar (20px) */
+            .app-main-container,
+            body.app-with-navbar > section,
+            body.app-with-navbar > div.container-fluid {
+                padding-left: 20px !important;
+                padding-right: 20px !important;
             }
         </style>
         {% block stylesheets %}{% endblock %}
