@@ -8,6 +8,7 @@
 {% set operationsActive = _path starts with '/admin/operations' %}
 {% set governanceActive = _path starts with '/admin/governance' %}
 {% set platformActive = _path starts with '/architecture' or _path starts with '/infrastructure' or _path starts with '/settings' or _path starts with '/users' or _path starts with '/security' or _path starts with '/about' or _path starts with '/admin/platform' %}
+{% set userLabel = app.user ? (app.user.fullName is not empty ? app.user.fullName : app.user.userIdentifier) : 'Conta' %}
 
 <style>
     .app-navbar {
@@ -15,6 +16,11 @@
         background: linear-gradient(135deg, rgba(7, 40, 68, 0.96) 0%, rgba(11, 60, 93, 0.94) 42%, rgba(14, 116, 144, 0.92) 100%);
         border-bottom: 1px solid rgba(255, 255, 255, 0.12);
         box-shadow: 0 1rem 2rem rgba(7, 40, 68, 0.18);
+    }
+
+    .app-navbar__container {
+        padding-left: 20px;
+        padding-right: 20px;
     }
 
     .app-navbar .navbar-brand {
@@ -263,25 +269,72 @@
         margin: 0.55rem 0;
     }
 
-    .app-navbar__surface {
+    .app-navbar__account {
         align-items: center;
-        background: rgba(255, 255, 255, 0.08);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 999px;
-        color: rgba(255, 255, 255, 0.85);
-        display: inline-flex;
-        font-size: 0.78rem;
+        display: flex;
         gap: 0.5rem;
-        margin-left: auto;
-        padding: 0.55rem 0.85rem;
     }
 
-    .app-navbar__surface-dot {
-        background: #4ade80;
-        border-radius: 50%;
-        display: inline-block;
-        height: 0.55rem;
-        width: 0.55rem;
+    .app-navbar__account .dropdown-toggle {
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: #fff;
+        padding-left: 0.9rem;
+        padding-right: 0.9rem;
+    }
+
+    .app-navbar__account .dropdown-toggle:hover,
+    .app-navbar__account .dropdown-toggle:focus,
+    .app-navbar__account .show > .dropdown-toggle {
+        background: rgba(125, 232, 219, 0.18);
+        color: #fff;
+    }
+
+    .app-navbar__account-name {
+        display: inline-flex;
+        flex-direction: column;
+        line-height: 1.1;
+        text-align: left;
+    }
+
+    .app-navbar__account-name strong {
+        font-size: 0.92rem;
+        font-weight: 700;
+    }
+
+    .app-navbar__account-name small {
+        color: rgba(232, 245, 247, 0.78);
+        font-size: 0.7rem;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+    }
+
+    .app-navbar__account-menu {
+        min-width: 15rem;
+    }
+
+    .app-navbar__account-menu .dropdown-item i {
+        margin-right: 0.5rem;
+        width: 1rem;
+    }
+
+    .app-navbar__login-link {
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 0.9rem;
+        color: #fff;
+        display: inline-flex;
+        font-weight: 600;
+        gap: 0.5rem;
+        padding: 0.8rem 1rem;
+        text-decoration: none;
+        transition: background-color 0.2s ease, color 0.2s ease;
+    }
+
+    .app-navbar__login-link:hover,
+    .app-navbar__login-link:focus {
+        background: rgba(125, 232, 219, 0.18);
+        color: #fff;
     }
 
     @media (min-width: 992px) {
@@ -311,8 +364,15 @@
             min-width: 100%;
         }
 
-        .app-navbar__surface {
-            display: none;
+        .app-navbar__container {
+            padding-left: 20px;
+            padding-right: 20px;
+        }
+
+        .app-navbar__account {
+            border-top: 1px solid rgba(255, 255, 255, 0.12);
+            margin-top: 0.9rem;
+            padding-top: 0.9rem;
         }
     }
 </style>
@@ -339,7 +399,7 @@
 {% import _self as navbar %}
 
 <nav class="navbar navbar-expand-lg fixed-top app-navbar">
-    <div class="container">
+    <div class="container-fluid app-navbar__container">
         <a class="navbar-brand" href="{{ path('homepage') }}" aria-label="Olinda360 - Plataforma de Inteligência Territorial">
             <span class="app-navbar__brand-mark"><i class="bi bi-buildings"></i></span>
             <span>
@@ -411,9 +471,41 @@
                 </li>
             </ul>
 
-            <div class="app-navbar__surface">
-                <span class="app-navbar__surface-dot"></span>
-                <span>Console GovTech em expansão</span>
+            <div class="app-navbar__account ms-lg-3">
+                {% if app.user %}
+                    <div class="dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-person-circle"></i>
+                            <span class="app-navbar__account-name">
+                                <strong>{{ userLabel }}</strong>
+                                <small>Perfil</small>
+                            </span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end app-navbar__account-menu">
+                            <li>
+                                <a class="dropdown-item" href="{{ path('user_edit') }}">
+                                    <i class="bi bi-person"></i>Meu perfil
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{{ path('user_change_password') }}">
+                                    <i class="bi bi-key"></i>Alterar senha
+                                </a>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <a class="dropdown-item" href="{{ logout_path('main') }}">
+                                    <i class="bi bi-box-arrow-right"></i>Sair
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                {% else %}
+                    <a class="app-navbar__login-link" href="{{ path('security_login') }}">
+                        <i class="bi bi-box-arrow-in-right"></i>
+                        <span>Login</span>
+                    </a>
+                {% endif %}
             </div>
         </div>
     </div>
