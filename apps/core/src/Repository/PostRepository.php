@@ -62,6 +62,27 @@ class PostRepository extends ServiceEntityRepository
     /**
      * @return Post[]
      */
+    public function findLatestPublished(int $limit = 3): array
+    {
+        /** @var Post[] $posts */
+        $posts = $this->createQueryBuilder('p')
+            ->addSelect('a', 't')
+            ->innerJoin('p.author', 'a')
+            ->leftJoin('p.tags', 't')
+            ->where('p.publishedAt <= :now')
+            ->orderBy('p.publishedAt', 'DESC')
+            ->setMaxResults($limit)
+            ->setParameter('now', new \DateTimeImmutable())
+            ->getQuery()
+            ->getResult()
+        ;
+
+        return $posts;
+    }
+
+    /**
+     * @return Post[]
+     */
     public function findBySearchQuery(string $query, int $limit = Paginator::PAGE_SIZE): array
     {
         $searchTerms = $this->extractSearchTerms($query);
