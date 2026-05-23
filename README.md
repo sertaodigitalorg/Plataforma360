@@ -163,6 +163,7 @@ Roadmap detalhado em [docs/roadmap.md](docs/roadmap.md).
 | [docs/instalacao.md](docs/instalacao.md) | Dev / DevOps | Guia completo de instalação e configuração |
 | [docs/manual-vscode.md](docs/manual-vscode.md) | Dev | Ambiente VS Code: extensões, debug, tasks, Copilot |
 | [docs/arquitetura.md](docs/arquitetura.md) | Dev / Arquiteto | Decisões arquiteturais, matriz de responsabilidades |
+| [docs/modelo-banco.md](docs/modelo-banco.md) | Dev / DBA | Modelagem completa: schemas, tabelas, colunas, de-para |
 | [docs/manual-usuario.md](docs/manual-usuario.md) | Gestor público | Passo a passo de uso: da ingestão aos dashboards e IA |
 | [docs/manual-kestra.md](docs/manual-kestra.md) | Dev / Ops | Manual técnico do Kestra: flows, API, integração Symfony |
 | [docs/manual-ia.md](docs/manual-ia.md) | Dev / Técnico | Manual técnico da IA: Ollama, Qdrant, modelos, contextos |

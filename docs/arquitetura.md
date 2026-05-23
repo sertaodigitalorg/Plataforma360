@@ -189,6 +189,16 @@ Responsavel por:
 
 O PostgreSQL e o banco relacional principal da Plataforma360 e tambem o repositorio central de metadados. Quando necessario, pode sustentar extensoes e modelos voltados a dados geograficos e analiticos, sem assumir o papel de data lake.
 
+O banco `app` organiza os dados em tres schemas principais:
+
+- `public` — tabelas gerenciadas pelo Doctrine (entidades, governanca, IA, operacoes, turismo).
+- `staging.*` — dados normalizados apos aplicacao dos `DatasetColumnMappings` sobre os arquivos RAW.
+- `warehouse.*` — tabelas analiticas criadas dinamicamente pelos `AnalyticModels`.
+
+A instancia `kestra-postgres` e um banco separado, gerenciado exclusivamente pelo Kestra.
+
+Modelagem completa em [docs/modelo-banco.md](modelo-banco.md).
+
 ### 3.6 MinIO - Data Lake e Armazenamento de Objetos
 
 Responsavel por:
