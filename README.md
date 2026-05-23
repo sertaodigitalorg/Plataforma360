@@ -74,7 +74,7 @@ Após subir o ambiente:
 
 Credenciais padrão do banco: servidor `postgres`, banco/usuário/senha `app`.
 
-Consulte [docs/instalacao.md](docs/instalacao.md) para o guia completo de instalação.
+Consulte [docs/instalacao.md](docs/instalacao.md) para o guia completo de instalação e [docs/manual-vscode.md](docs/manual-vscode.md) para configurar o ambiente de desenvolvimento no VS Code.
 
 ## Perfis Docker
 
@@ -161,6 +161,7 @@ Roadmap detalhado em [docs/roadmap.md](docs/roadmap.md).
 | Documento | Público | Descrição |
 |---|---|---|
 | [docs/instalacao.md](docs/instalacao.md) | Dev / DevOps | Guia completo de instalação e configuração |
+| [docs/manual-vscode.md](docs/manual-vscode.md) | Dev | Ambiente VS Code: extensões, debug, tasks, Copilot |
 | [docs/arquitetura.md](docs/arquitetura.md) | Dev / Arquiteto | Decisões arquiteturais, matriz de responsabilidades |
 | [docs/manual-usuario.md](docs/manual-usuario.md) | Gestor público | Passo a passo de uso: da ingestão aos dashboards e IA |
 | [docs/manual-kestra.md](docs/manual-kestra.md) | Dev / Ops | Manual técnico do Kestra: flows, API, integração Symfony |
