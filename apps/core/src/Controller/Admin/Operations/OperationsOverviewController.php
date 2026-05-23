@@ -25,7 +25,7 @@ class OperationsOverviewController extends AbstractController
         private readonly HealthCheckService $healthCheckService,
     ) {}
 
-    #[Route('', name: 'app_admin_operations_overview', methods: ['GET'])]
+    #[Route('/overview', name: 'app_admin_operations_overview', methods: ['GET'])]
     public function index(): Response
     {
         $health = $this->healthCheckService->checkAll();

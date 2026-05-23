@@ -6,7 +6,8 @@ PHP := $(COMPOSE) exec php
         up-ai down-ai \
         up-ops down-ops \
         up-all down-all \
-        kestra-logs kestra-restart
+        kestra-logs kestra-restart \
+        create-admin-hubs
 
 install:
 	cp -n .env.example .env || true
@@ -59,3 +60,16 @@ up-all:
 
 down-all:
 	$(COMPOSE) --profile ai --profile ops down
+
+# Criar estrutura de diretórios e templates para admin hubs
+create-admin-hubs:
+	mkdir -p apps/core/templates/admin/intelligence
+	mkdir -p apps/core/templates/admin/integrations
+	mkdir -p apps/core/templates/admin/operations
+	mkdir -p apps/core/templates/admin/platform
+	@echo "✓ Diretórios criados com sucesso"
+	php create-admin-hubs.php
+
+create-admin-hubs-files:
+	@echo "Criando arquivos de templates..."
+	@$(PHP) php bin/console cache:clear || true

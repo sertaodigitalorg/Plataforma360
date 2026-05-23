@@ -350,7 +350,38 @@ PostgreSQL warehouse.* / staging.*
   Ollama + Qdrant (perfil ai) — IA local soberana
 ```
 
-## 6. Decisao Arquitetural Oficial
+## 6. Navegacao e UX do Portal
+
+O portal adota o padrão **hub page por módulo** para simplificar a barra de navegação e melhorar o acesso a funcionalidades.
+
+### Princípio
+
+Cada módulo de topo (IA, Governança, Operações) expõe uma **página hub** com cards visuais que descrevem e acessam suas sub-funcionalidades. O menu da navbar aponta diretamente para a hub, sem dropdown com dezenas de itens.
+
+### Estrutura de hub pages
+
+| Módulo | Rota hub | Rota |
+| --- | --- | --- |
+| Dados | Gestão de Dados | `/admin/data-management` |
+| Operações | Visão Geral | `/admin/operations` |
+| IA | Hub IA | `/admin/ai` |
+| Governança | Hub Governança | `/admin/governance` |
+
+### Navbar simplificado
+
+```
+Início | Inteligência ▾ | Dados ▾ | Integrações ▾ | IA | Operações ▾ | Governança | Plataforma ▾
+```
+
+- **IA** — link direto para `/admin/ai` (hub com 6 cards)
+- **Governança** — link direto para `/admin/governance` (hub com 4 cards)
+- **Operações** — dropdown mínimo: Visão Geral, Pipelines, Execuções
+
+### Diretriz
+
+Sub-páginas que já aparecem na hub **não devem** aparecer no dropdown do menu. O menu serve para acesso rápido entre módulos; a navegação interna é responsabilidade da hub page.
+
+## 7. Decisao Arquitetural Oficial
 
 Para a Plataforma360 (Fases 1–6 implementadas) estão em uso:
 
@@ -368,7 +399,7 @@ Para a Plataforma360 (Fases 1–6 implementadas) estão em uso:
 
 MinIO foi avaliado e não foi adotado no MVP — o armazenamento de arquivos brutos usa o filesystem local em `storage/raw/`.
 
-## 7. Diretrizes de Evolucao
+## 8. Diretrizes de Evolucao
 
 - Evitar duplicacao de dashboards no Symfony.
 - Usar Metabase para analytics de negocio.

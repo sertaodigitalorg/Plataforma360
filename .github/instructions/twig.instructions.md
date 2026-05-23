@@ -5,19 +5,137 @@ applyTo: "apps/core/templates/**/*.twig"
 
 # Twig/Bootstrap — Convenções da Plataforma360
 
-## Layout
+## ⚠️ Regras críticas (nunca violar)
 
-- Todo template admin estende `base.html.twig`
-- Conteúdo principal em `<div class="container-fluid py-4">`
-- Cabeçalho com `d-flex justify-content-between` (título + botão de ação)
+### 1. Bloco principal: SEMPRE `{% block body %}`, NUNCA `{% block content %}`
 
-## Cards
+O `base.html.twig` define `{% block body %}` como bloco principal. Usar `{% block content %}` faz a página renderizar em branco silenciosamente.
 
 ```twig
-<div class="card border-0 shadow-sm">
-    <div class="card-header bg-primary text-white">Título</div>
-    <div class="card-body">...</div>
+{# ✅ CORRETO #}
+{% block body %}
+  <section class="py-4 py-lg-5">...</section>
+{% endblock %}
+
+{# ❌ ERRADO — conteúdo invisível #}
+{% block content %}...{% endblock %}
+```
+
+### 2. Estrutura mínima de qualquer template admin
+
+```twig
+{% extends 'base.html.twig' %}
+{% block title %}Título da Página{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    {# styles opcionais aqui #}
+{% endblock %}
+
+{% block body %}
+  {# conteúdo aqui — NÃO envolva em container-fluid; use section ou div direto #}
+{% endblock %}
+```
+
+## Padrão Hub Page (obrigatório para páginas de módulo)
+
+Toda página de hub (entrada de módulo) **deve** usar o padrão `data-management-hero` + `data-management-card`. Inclua os estilos do `_styles.html.twig`.
+
+### Estrutura completa de hub page
+
+```twig
+{% extends 'base.html.twig' %}
+{% block title %}NomeModulo · Hub{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    {% include 'admin/data_management/_styles.html.twig' %}
+{% endblock %}
+
+{% block body %}
+<section class="py-4 py-lg-5">
+
+  {# 1. Hero banner — gradiente navy → teal #}
+  <div class="data-management-hero p-4 p-lg-5 mb-4">
+    <div class="row align-items-center g-4">
+      <div class="col-lg-8">
+        <span class="badge rounded-pill text-bg-light text-primary mb-3">Fase X · Subtítulo</span>
+        <h1 class="display-6 fw-bold mb-3">Nome do Módulo</h1>
+        <p class="lead mb-3">Descrição principal do módulo.</p>
+        <p class="mb-0 opacity-75">Descrição secundária com mais contexto.</p>
+      </div>
+      <div class="col-lg-4">
+        <div class="data-management-panel p-4 h-100">
+          <p class="text-uppercase small fw-semibold text-primary mb-2">Ação principal</p>
+          <p class="mb-3 text-secondary small">Descrição da ação.</p>
+          <div class="d-flex flex-wrap gap-2">
+            <a class="btn btn-primary btn-sm" href="{{ path('rota_principal') }}">Ação 1</a>
+            <a class="btn btn-outline-primary btn-sm" href="{{ path('rota_secundaria') }}">Ação 2</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {# 2. Título de seção (opcional) #}
+  <h2 class="h5 fw-semibold mb-3"><i class="bi bi-nome-icone me-2 text-primary"></i>Nome da seção</h2>
+
+  {# 3. Grid de cards de navegação #}
+  <div class="row g-4 mb-4">
+    <div class="col-md-6 col-xl-3">
+      <a href="{{ path('app_rota') }}" class="text-decoration-none">
+        <article class="data-management-card p-4">
+          <div class="d-flex justify-content-between align-items-start gap-3 mb-3">
+            <div class="data-management-icon"><i class="bi bi-nome-icone"></i></div>
+            <span class="badge rounded-pill text-bg-light text-primary">Badge</span>
+          </div>
+          <h3 class="h5 mb-2">Título do Card</h3>
+          <p class="text-secondary small mb-3">Descrição do que esse item faz.</p>
+          <span class="btn btn-outline-primary btn-sm w-100">Acessar</span>
+        </article>
+      </a>
+    </div>
+    {# Repetir para cada card #}
+  </div>
+
+</section>
+{% endblock %}
+```
+
+### Classes CSS disponíveis (de `_styles.html.twig`)
+
+| Classe | Uso |
+|---|---|
+| `.data-management-hero` | Banner hero com gradiente navy→teal |
+| `.data-management-card` | Card branco com sombra + hover animado |
+| `.data-management-panel` | Painel branco sem hover (info/KPI) |
+| `.data-management-stat` | Bloco de estatística dentro de panel |
+| `.data-management-icon` | Ícone circular navy 3rem |
+| `.data-management-card__total` | Número grande clamp(2rem, 3vw, 2.75rem) |
+
+**Nunca crie `.card-hover` manual** — use `.data-management-card` que já inclui o efeito.
+
+---
+
+## Outros layouts
+
+### Página de listagem (index)
+
+```twig
+{% block body %}
+<div class="container-fluid py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h1 class="h3 fw-bold mb-1"><i class="bi bi-icone me-2"></i>Título</h1>
+      <p class="text-muted mb-0">Subtítulo descritivo</p>
+    </div>
+    <a href="{{ path('rota_new') }}" class="btn btn-primary btn-sm">
+      <i class="bi bi-plus-circle me-1"></i>Novo
+    </a>
+  </div>
+  {# tabela ou cards #}
 </div>
+{% endblock %}
 ```
 
 ## Tabelas

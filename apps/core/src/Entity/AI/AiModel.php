@@ -31,16 +31,16 @@ class AiModel
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
-    private string $name;
+    private string $name = '';
 
     #[ORM\Column(length: 191, unique: true)]
-    private string $slug;
+    private string $slug = '';
 
     #[ORM\Column(length: 50)]
     private string $provider = self::PROVIDER_OLLAMA;
 
     #[ORM\Column(name: 'model_name', length: 100)]
-    private string $modelName;
+    private string $modelName = '';
 
     #[ORM\Column(length: 512, nullable: true)]
     private ?string $endpoint = null;
