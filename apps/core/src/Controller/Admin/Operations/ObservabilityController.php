@@ -8,7 +8,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
-#[Route('/admin/operations/observability', name: 'app_admin_operations_observability')]
+#[Route('/admin/operations/observability')]
 #[IsGranted('ROLE_ADMIN')]
 class ObservabilityController extends AbstractController
 {
@@ -16,7 +16,7 @@ class ObservabilityController extends AbstractController
         private readonly HealthCheckService $healthCheckService,
     ) {}
 
-    #[Route('', methods: ['GET'])]
+    #[Route('', name: 'app_admin_operations_observability', methods: ['GET'])]
     public function index(): Response
     {
         $health = $this->healthCheckService->checkAll();
