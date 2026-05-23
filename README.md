@@ -166,6 +166,7 @@ Roadmap detalhado em [docs/roadmap.md](docs/roadmap.md).
 | [docs/manual-kestra.md](docs/manual-kestra.md) | Dev / Ops | Manual técnico do Kestra: flows, API, integração Symfony |
 | [docs/manual-ia.md](docs/manual-ia.md) | Dev / Técnico | Manual técnico da IA: Ollama, Qdrant, modelos, contextos |
 | [docs/manual-agentes.md](docs/manual-agentes.md) | Dev | Guia de uso dos agentes e skills do GitHub Copilot |
+| [docs/testes.md](docs/testes.md) | Dev / QA | Cenários de teste manuais e automatizados (Fases 1–6) |
 | [docs/roadmap.md](docs/roadmap.md) | Time de produto | Fases implementadas e planejadas |
 
 ## Agentes Copilot
