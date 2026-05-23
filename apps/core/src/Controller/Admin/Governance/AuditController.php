@@ -9,7 +9,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
-#[Route('/admin/governance/audit', name: 'app_admin_governance_audit')]
+#[Route('/admin/governance/audit')]
 #[IsGranted('ROLE_ADMIN')]
 class AuditController extends AbstractController
 {
@@ -17,7 +17,7 @@ class AuditController extends AbstractController
         private readonly AuditLogRepository $auditLogRepository,
     ) {}
 
-    #[Route('', methods: ['GET'])]
+    #[Route('', name: 'app_admin_governance_audit', methods: ['GET'])]
     public function index(Request $request): Response
     {
         $page = max(1, (int)$request->query->get('page', 1));

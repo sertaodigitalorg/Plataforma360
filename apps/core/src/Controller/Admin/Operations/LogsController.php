@@ -10,7 +10,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
-#[Route('/admin/operations/logs', name: 'app_admin_operations_logs')]
+#[Route('/admin/operations/logs')]
 #[IsGranted('ROLE_ADMIN')]
 class LogsController extends AbstractController
 {
@@ -19,7 +19,7 @@ class LogsController extends AbstractController
         private readonly PipelineExecutionRepository $executionRepository,
     ) {}
 
-    #[Route('', methods: ['GET'])]
+    #[Route('', name: 'app_admin_operations_logs', methods: ['GET'])]
     public function index(Request $request): Response
     {
         $page = max(1, (int)$request->query->get('page', 1));

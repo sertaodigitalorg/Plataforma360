@@ -8,7 +8,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
-#[Route('/admin/operations/ai-metrics', name: 'app_admin_operations_ai_metrics')]
+#[Route('/admin/operations/ai-metrics')]
 #[IsGranted('ROLE_ADMIN')]
 class AiMetricsController extends AbstractController
 {
@@ -16,7 +16,7 @@ class AiMetricsController extends AbstractController
         private readonly AiInteractionRepository $interactionRepository,
     ) {}
 
-    #[Route('', methods: ['GET'])]
+    #[Route('', name: 'app_admin_operations_ai_metrics', methods: ['GET'])]
     public function index(): Response
     {
         $byProvider = $this->interactionRepository->countByProvider();

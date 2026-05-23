@@ -8,7 +8,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
-#[Route('/admin/governance/costs', name: 'app_admin_governance_costs')]
+#[Route('/admin/governance/costs')]
 #[IsGranted('ROLE_ADMIN')]
 class CostController extends AbstractController
 {
@@ -16,7 +16,7 @@ class CostController extends AbstractController
         private readonly CostTrackingService $costTrackingService,
     ) {}
 
-    #[Route('', methods: ['GET'])]
+    #[Route('', name: 'app_admin_governance_costs', methods: ['GET'])]
     public function index(): Response
     {
         $data = $this->costTrackingService->getDashboardData();
