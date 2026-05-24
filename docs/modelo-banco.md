@@ -2,6 +2,8 @@
 
 Descrição completa dos schemas, tabelas e colunas do banco de dados PostgreSQL da Plataforma360.
 
+> **Estado atual importante:** o projeto recebeu a migration `Version20260523143000` para remover o prefixo `symfony_demo_` das tabelas principais de autenticacao e posts. A documentacao abaixo ja reflete os nomes atuais do mapeamento Doctrine.
+
 **Documentação relacionada:**
 - [Arquitetura da plataforma](arquitetura.md)
 - [Instalação e Docker](instalacao.md)
@@ -15,7 +17,7 @@ Descrição completa dos schemas, tabelas e colunas do banco de dados PostgreSQL
 
 1. [Visão Geral dos Bancos](#1-visão-geral-dos-bancos)
 2. [Schema `public` — Core e Autenticação](#2-schema-public--core-e-autenticação)
-3. [Schema `public` — Blog (Symfony Demo)](#3-schema-public--blog-symfony-demo)
+3. [Schema `public` — Blog e Publicações](#3-schema-public--blog-e-publicações)
 4. [Schema `public` — Turismo e Organizações](#4-schema-public--turismo-e-organizações)
 5. [Schema `public` — Pipeline de Ingestão CKAN](#5-schema-public--pipeline-de-ingestão-ckan)
 6. [Schema `public` — Dados RAW e Staging](#6-schema-public--dados-raw-e-staging)
@@ -38,15 +40,15 @@ A plataforma usa **três instâncias PostgreSQL** e um **banco vetorial**:
 
 | Instância | Banco | Container | Porta host | Gerenciado por |
 |---|---|---|---|---|
-| `postgres` | `app` | `postgres` | 5432 | Doctrine Migrations |
+| `postgres` | `plataforma360` | `postgres` | 5432 | Doctrine Migrations |
 | `kestra-postgres` | `kestra` | `kestra-postgres` | — (interno) | Kestra (auto) |
 | Qdrant | N/A | `qdrant` | 6333 | API REST |
 
-### Banco `app` — distribuição por fase
+### Banco `plataforma360` — distribuição por fase
 
 | Fase | Módulo | Tabelas principais |
 |---|---|---|
-| 1 | Core / Auth | `symfony_demo_user`, `tenants` |
+| 1 | Core / Auth | `app_user`, `tenants` |
 | 2 | Ingestão CKAN | `data_providers`, `provider_packages`, `dataset_resources`, `ingestion_runs` |
 | 2 | Dados RAW | `raw_files`, `dataset_schemas`, `dataset_column_mappings`, `dataset_quality_reports` |
 | 3 | Catálogo / Indicadores | `indicators`, `data_sources`, `batch_routines` |
@@ -55,13 +57,13 @@ A plataforma usa **três instâncias PostgreSQL** e um **banco vetorial**:
 | 6 | Operações | `pipelines`, `pipeline_executions`, `alerts`, `system_metrics` |
 | 6 | Governança | `audit_logs`, `cost_records`, `data_governance_records` |
 | — | Turismo | `organization`, `tourist_spot`, `tourism_event`, `tourist_guide`, `accommodation` |
-| — | Blog (demo) | `symfony_demo_post`, `symfony_demo_tag`, `symfony_demo_comment` |
+| — | Blog / avisos publicos | `post`, `tag`, `comment`, `symfony_demo_post_tag` |
 
 ---
 
 ## 2. Schema `public` — Core e Autenticação
 
-### `symfony_demo_user`
+### `app_user`
 > Usuários do portal. Autenticação via Symfony Security.
 
 | Coluna | Tipo | Nullable | Descrição |
@@ -98,16 +100,18 @@ A plataforma usa **três instâncias PostgreSQL** e um **banco vetorial**:
 
 ---
 
-## 3. Schema `public` — Blog (Symfony Demo)
+## 3. Schema `public` — Blog e Publicações
 
-> Módulo herdado do Symfony Demo. Serve como base de estudos e exemplo de CRUD.
+> O modulo de posts e herdado do Symfony Demo, mas foi adaptado para a Plataforma360. Atualmente ele atende a area publica `/blog` e a secao de avisos/postagens exibida na home publica.
 
-### `symfony_demo_post`
+> A tabela de juncao ManyToMany permanece `symfony_demo_post_tag` no estado atual do mapeamento.
+
+### `post`
 
 | Coluna | Tipo | Nullable | Descrição |
 |---|---|---|---|
 | `id` | integer | NOT NULL | PK auto-increment |
-| `author_id` | integer | NOT NULL | FK → `symfony_demo_user.id` |
+| `author_id` | integer | NOT NULL | FK → `app_user.id` |
 | `title` | varchar(255) | NOT NULL | Título do post |
 | `slug` | varchar(255) | NOT NULL | Slug único |
 | `summary` | varchar(255) | NOT NULL | Resumo (máx. 255 chars) |
@@ -115,11 +119,11 @@ A plataforma usa **três instâncias PostgreSQL** e um **banco vetorial**:
 | `published_at` | datetime | NOT NULL | Data de publicação |
 
 Índice único: `slug`
-Relações: `author_id` → `symfony_demo_user`, posts ↔ tags via `symfony_demo_post_tag`
+Relações: `author_id` → `app_user`, posts ↔ tags via `symfony_demo_post_tag`
 
 ---
 
-### `symfony_demo_tag`
+### `tag`
 
 | Coluna | Tipo | Nullable | Descrição |
 |---|---|---|---|
@@ -128,13 +132,13 @@ Relações: `author_id` → `symfony_demo_user`, posts ↔ tags via `symfony_dem
 
 ---
 
-### `symfony_demo_comment`
+### `comment`
 
 | Coluna | Tipo | Nullable | Descrição |
 |---|---|---|---|
 | `id` | integer | NOT NULL | PK auto-increment |
-| `post_id` | integer | NOT NULL | FK → `symfony_demo_post.id` |
-| `author_id` | integer | NOT NULL | FK → `symfony_demo_user.id` |
+| `post_id` | integer | NOT NULL | FK → `post.id` |
+| `author_id` | integer | NOT NULL | FK → `app_user.id` |
 | `content` | text | NOT NULL | Texto do comentário |
 | `published_at` | datetime | NOT NULL | Data de publicação |
 
@@ -144,8 +148,8 @@ Relações: `author_id` → `symfony_demo_user`, posts ↔ tags via `symfony_dem
 
 | Coluna | Tipo | Descrição |
 |---|---|---|
-| `post_id` | integer | FK → `symfony_demo_post.id` |
-| `tag_id` | integer | FK → `symfony_demo_tag.id` |
+| `post_id` | integer | FK → `post.id` |
+| `tag_id` | integer | FK → `tag.id` |
 
 ---
 

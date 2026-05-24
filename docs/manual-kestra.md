@@ -121,6 +121,7 @@ A conexão nos flows Kestra com o banco principal pode ser feita via JDBC com as
 
 A partir da Fase 6, o portal Symfony se integra ao Kestra via `KestraService`:
 
+- **Navegação por hub:** o menu **Operações** abre um hub do módulo, de onde a equipe acessa Visão Geral, Pipelines, Execuções, Observabilidade, Alertas, Métricas IA e Logs.
 - **Disparar execução:** menu **Operações → Pipelines → botão ▶** dispara o flow no namespace/flow configurado no cadastro do pipeline.
 - **Acompanhar status:** **Operações → Execuções** mostra o status em tempo real sincronizado com a API do Kestra.
 - **Ver logs:** detalhe de cada execução exibe logs retornados pela API do Kestra.

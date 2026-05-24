@@ -2,6 +2,12 @@
 
 Este manual descreve como usar os **agentes** e **skills** do GitHub Copilot configurados para a Plataforma360. Eles aceleraram o desenvolvimento ao conhecer a arquitetura, convenções e padrões do projeto.
 
+## Atualizações recentes de contexto
+
+- O agente de frontend passou a tratar como obrigatorios: `{% block body %}`, padding lateral de `20px` e uso de `container-fluid` nas telas.
+- Hub pages viraram o padrao oficial para entradas de modulo no navbar, substituindo dropdowns extensos.
+- A home publica e a tela de login agora seguem o mesmo padrao visual institucional documentado no agente `frontend.agent.md`.
+
 ---
 
 ## Onde ficam os arquivos
@@ -88,6 +94,10 @@ No VS Code, abra o painel do Copilot Chat e clique no seletor de agente (ícone 
 - Estrutura padrão de páginas admin (cabeçalho, flash, card, tabela)
 - Confirmação de delete com CSRF token
 - Formatação de datas e valores monetários em Twig
+- Uso obrigatório de `{% block body %}` e proibicao de `{% block content %}`
+- Hub pages com `data-management-hero`, `data-management-card`, `data-management-panel`
+- Margens laterais padronizadas em `20px` alinhadas ao navbar
+- Regra de nao criar arquivos auxiliares temporarios na raiz do projeto
 
 ---
 
@@ -237,6 +247,8 @@ As instructions são carregadas automaticamente pelo Copilot quando você edita 
 | `future/kestra/flows/**/*.yml` | `kestra.instructions.md` | Namespace, conexão PostgreSQL, estrutura YAML |
 
 Você não precisa fazer nada — o Copilot aplica as regras automaticamente ao sugerir ou modificar código nos arquivos correspondentes.
+
+No caso dos templates Twig, a fonte de verdade para o padrao visual atual fica em `.github/agents/frontend.agent.md` e `.github/instructions/twig.instructions.md`.
 
 ---
 

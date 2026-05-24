@@ -48,14 +48,15 @@ Documento de referência para testes manuais e orientação do Copilot nos teste
 
 | ID | Tipo | Cenário | Pré-condição | Passos | Resultado Esperado |
 |---|---|---|---|---|---|
-| AUTH-01 | ✅ | Login com credenciais válidas | Usuário admin cadastrado | 1. Acessar `/login` 2. Informar e-mail e senha corretos 3. Clicar em Entrar | Redireciona para `/admin` com navbar visível |
-| AUTH-02 | ❌ | Login com senha incorreta | Usuário cadastrado | 1. Informar e-mail correto e senha errada | Exibe mensagem "Credenciais inválidas", permanece em `/login` |
-| AUTH-03 | ❌ | Login com e-mail inexistente | — | 1. Informar e-mail não cadastrado | Exibe mensagem de erro genérica (não revela se e-mail existe) |
-| AUTH-04 | ✅ | Logout | Usuário logado | 1. Clicar em "Sair" no navbar | Redireciona para `/login`, sessão encerrada |
-| AUTH-05 | ❌ | Acesso a rota admin sem autenticação | Usuário não logado | 1. Acessar `/admin` diretamente | Redireciona para `/login` |
-| AUTH-06 | ❌ | Acesso a rota admin com usuário sem ROLE_ADMIN | Usuário com ROLE_USER | 1. Logar com usuário sem permissão 2. Tentar acessar `/admin/pipelines` | Retorna HTTP 403 Forbidden |
+| AUTH-01 | ✅ | Login com credenciais válidas | Usuário admin cadastrado | 1. Acessar `/admin/login` 2. Informar usuario e senha corretos 3. Clicar em Entrar | Redireciona para `/admin` com navbar visível |
+| AUTH-02 | ❌ | Login com senha incorreta | Usuário cadastrado | 1. Informar usuario correto e senha errada | Exibe mensagem de erro genérica em portugues e permanece em `/admin/login` |
+| AUTH-03 | ❌ | Login com usuário inexistente | — | 1. Informar usuario não cadastrado | Exibe mensagem de erro genérica (não revela se o usuário existe) |
+| AUTH-04 | ✅ | Logout | Usuário logado | 1. Clicar em "Logout" no menu de conta do navbar | Redireciona para `/admin/login`, sessão encerrada |
+| AUTH-05 | ❌ | Acesso a rota admin sem autenticação | Usuário não logado | 1. Acessar `/admin` diretamente | Redireciona para `/admin/login` |
+| AUTH-06 | ❌ | Acesso a rota admin com usuário sem ROLE_ADMIN | Usuário com ROLE_USER | 1. Logar com usuário sem permissão 2. Tentar acessar `/admin/operations/pipelines` | Retorna HTTP 403 Forbidden |
 | AUTH-07 | ⚠️ | Sessão expirada durante uso | Usuário logado com sessão antiga | 1. Manter sessão inativa além do timeout 2. Tentar acessar página admin | Redireciona para login com flash "Sessão expirada" |
 | AUTH-08 | ❌ | Campo de senha vazio | — | 1. Submeter formulário de login sem senha | Validação HTML5 impede submit |
+| AUTH-09 | ✅ | Preenchimento rápido com usuário de exemplo | Tela de login aberta | 1. Clicar em um dos botões de acesso rápido abaixo de Entrar | Campo de usuário é preenchido automaticamente |
 
 ---
 
@@ -64,10 +65,12 @@ Documento de referência para testes manuais e orientação do Copilot nos teste
 | ID | Tipo | Cenário | Pré-condição | Passos | Resultado Esperado |
 |---|---|---|---|---|---|
 | DASH-01 | ✅ | Acessar dashboard admin | Usuário admin logado | 1. Acessar `/admin` | Exibe cards de KPI, links para módulos |
-| DASH-02 | ✅ | Acessar homepage pública | — | 1. Acessar `/` | Exibe página institucional com links |
+| DASH-02 | ✅ | Acessar homepage pública | — | 1. Acessar `/` | Exibe página institucional com cards e postagens públicas |
 | DASH-03 | ✅ | Healthcheck da aplicação | Symfony e PostgreSQL ativos | 1. Acessar `/health` | Retorna JSON `{"status":"ok"}` com HTTP 200 |
-| DASH-04 | ✅ | Navbar: menus aparecem corretamente | Admin logado | 1. Inspecionar navbar | Menus: Dados, Inteligência, Integrações, IA, Operações, Governança |
-| DASH-05 | ✅ | Menu ativo destacado | Admin em `/admin/operations` | 1. Navegar para qualquer rota de operações | Menu "Operações" aparece com destaque ativo |
+| DASH-04 | ✅ | Navbar: menus aparecem corretamente | Admin logado | 1. Inspecionar navbar | Menus: Início, Inteligência, Dados, Integrações, IA, Operações, Governança, Plataforma |
+| DASH-05 | ✅ | Menu ativo destacado | Admin em `/admin/operations/overview` | 1. Navegar para qualquer rota de operações | Menu "Operações" aparece com destaque ativo |
+| DASH-06 | ✅ | Publicações aparecem depois dos cards da home | Existem posts publicados | 1. Acessar `/` 2. Rolar após os cards institucionais | A seção de publicações aparece abaixo dos cards |
+| DASH-07 | ✅ | Abrir postagem pública pela home | Existe post publicado | 1. Clicar em "Ler postagem" | Abre `/blog/posts/{slug}` sem exigir login |
 
 ---
 

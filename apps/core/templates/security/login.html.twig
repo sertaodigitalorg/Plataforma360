@@ -2,112 +2,184 @@
 
 {% block body_id 'login' %}
 
+{% block title %}Entrar na Plataforma360{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .login-page {
+            min-height: calc(100vh - 8rem);
+        }
+
+        .login-hero {
+            border: 0;
+            border-radius: 1rem;
+            color: #fff;
+            background: linear-gradient(135deg, #12304a 0%, #0f766e 100%);
+            box-shadow: 0 1.5rem 3rem rgba(18, 48, 74, .18);
+        }
+
+        .login-card,
+        .login-help-card {
+            border: 1px solid rgba(18, 32, 51, .08);
+            border-radius: 1rem;
+            background: #fff;
+            box-shadow: 0 1rem 2.5rem rgba(18, 32, 51, .08);
+        }
+
+        .login-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: .5rem;
+            padding: .5rem .85rem;
+            border-radius: 999px;
+            color: #0f766e;
+            background: rgba(255, 255, 255, .16);
+            font-size: .875rem;
+            font-weight: 600;
+        }
+
+        .login-user-table th {
+            font-size: .875rem;
+            font-weight: 700;
+            color: #5d6b7c;
+            text-transform: uppercase;
+            letter-spacing: .04em;
+        }
+
+        .login-user-table td {
+            vertical-align: middle;
+        }
+
+        .login-command {
+            display: block;
+            padding: .85rem 1rem;
+            border-radius: .75rem;
+            color: #12304a;
+            background: #f5f8fb;
+            font-size: .9rem;
+            overflow-x: auto;
+        }
+
+        .login-password-toggle {
+            min-width: 3.25rem;
+        }
+    </style>
+{% endblock %}
+
 {% block main %}
     {% if error %}
-        <div class="alert alert-danger" role="alert">
-            {{ error.messageKey|trans(error.messageData, 'security') }}
+        <div class="alert alert-danger border-0 shadow-sm" role="alert">
+            <i class="bi bi-exclamation-octagon-fill me-2"></i>Falha no acesso. Verifique seu usuario e senha e tente novamente.
         </div>
     {% endif %}
 
-    {#
-        This references the Stimulus controller defined in "assets/controllers/login-controller.js".
-        See https://symfony.com/bundles/StimulusBundle/current/index.html
-        For more info on Symfony UX see https://ux.symfony.com
-    #}
-    <div class="row" {{ stimulus_controller('login') }}>
-        <div class="col-sm-5">
-            <div class="well">
-                <form action="{{ path('security_login') }}" method="post">
-                    <fieldset>
-                        <legend><twig:ux:icon name="tabler:lock"/> {{ 'title.login'|trans }}</legend>
+    <section class="login-page py-4 py-lg-5" {{ stimulus_controller('login') }}>
+        <div class="row g-4 align-items-stretch">
+            <div class="col-12 col-xl-6">
+                <div class="login-hero p-4 p-lg-5 h-100 d-flex flex-column">
+                    <span class="login-badge mb-4">
+                        <i class="bi bi-shield-lock"></i> Acesso administrativo seguro
+                    </span>
+
+                    <h1 class="display-6 fw-bold mb-3">Entrar na Plataforma360</h1>
+                    <p class="lead mb-3">Acesse o painel para gerenciar dados, integracoes, inteligencia, IA, operacoes e governanca da plataforma.</p>
+                    <p class="opacity-75 mb-4">Use suas credenciais para entrar. Em ambiente de desenvolvimento, os acessos de exemplo estao disponiveis no card ao lado, abaixo do botao Entrar.</p>
+
+                    <div class="d-grid gap-3 mt-auto">
+                        <div class="border border-light-subtle rounded-4 p-3">
+                            <span class="badge text-bg-light text-primary mb-2">Nota</span>
+                            <p class="small text-white-50 mb-2">Se esses usuarios nao funcionarem, recarregue os dados de exemplo com:</p>
+                            <code class="login-command">$ php bin/console doctrine:fixtures:load</code>
+                        </div>
+
+                        <div class="border border-light-subtle rounded-4 p-3">
+                            <span class="badge text-bg-light text-primary mb-2">Dica</span>
+                            <p class="small text-white-50 mb-2">Para criar um novo usuario localmente, utilize:</p>
+                            <code class="login-command">$ php bin/console app:add-user</code>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12 col-xl-6">
+                <div class="login-card p-4 p-lg-5 h-100">
+                    <div class="d-flex align-items-center gap-2 mb-4">
+                        <i class="bi bi-box-arrow-in-right text-primary fs-4"></i>
+                        <div>
+                            <h2 class="h4 mb-1">Acesso ao sistema</h2>
+                            <p class="text-muted mb-0">Entre com seu usuario e senha.</p>
+                        </div>
+                    </div>
+
+                    <form action="{{ path('security_login') }}" method="post" novalidate>
                         <div class="mb-3">
-                            <label class="form-label" for="username">{{ 'label.username'|trans }}</label>
-                            <input class="form-control" {{ stimulus_target('login', 'username') }} id="username" name="_username" required="required" type="text" value="{{ last_username }}">
+                            <label class="form-label fw-semibold" for="username">Usuario</label>
+                            <input class="form-control form-control-lg" {{ stimulus_target('login', 'username') }} id="username" name="_username" required="required" type="text" value="{{ last_username }}" autocomplete="username">
                         </div>
 
                         <div class="mb-3">
-                            <label class="form-label" for="password">{{ 'label.password'|trans }}</label>
+                            <label class="form-label fw-semibold" for="password">Senha</label>
                             <div class="input-group">
-                                <input class="form-control" {{ stimulus_target('login', 'password') }} id="password" name="_password" required="required" type="password">
-                                <button class="btn btn-primary" type="button" {{ stimulus_action('login', 'togglePasswordInputType') }}><twig:ux:icon name="tabler:eye" aria-hidden="false" aria-label="Toggle password visibility"/></button>
+                                <input class="form-control form-control-lg" {{ stimulus_target('login', 'password') }} id="password" name="_password" required="required" type="password" autocomplete="current-password">
+                                <button class="btn btn-outline-primary login-password-toggle" type="button" {{ stimulus_action('login', 'togglePasswordInputType') }} aria-label="Mostrar ou ocultar senha">
+                                    <i class="bi bi-eye"></i>
+                                </button>
                             </div>
                         </div>
 
-                        <div class="mb-3 form-check">
+                        <div class="mb-4 form-check">
                             <input class="form-check-input" id="remember_me" name="_remember_me" type="checkbox" checked>
-                            <label class="form-check-label" for="remember_me">{{ 'label.remember_me'|trans }}</label>
+                            <label class="form-check-label" for="remember_me">Manter conectado</label>
                         </div>
 
                         <input type="hidden" name="_target_path" value="{{ app.request.query.get('redirect_to') }}">
                         <input type="hidden" name="_csrf_token" data-controller="csrf-protection" value="{{ csrf_token('authenticate') }}">
-                        <button type="submit" class="btn btn-primary">
-                            <twig:ux:icon name="tabler:login"/> {{ 'action.sign_in'|trans }}
+
+                        <button type="submit" class="btn btn-primary btn-lg w-100">
+                            <i class="bi bi-box-arrow-in-right me-2"></i>Entrar
                         </button>
-                    </fieldset>
-                </form>
-            </div>
-        </div>
+                    </form>
 
-        <div id="login-help" class="col-sm-7">
-            <h3>
-                <twig:ux:icon name="tabler:arrow-left"/>
-                {{ 'help.login_users'|trans }}
-            </h3>
+                    <hr class="my-4">
 
-            <table class="table table-striped table-bordered table-hover">
-                <thead>
-                    <tr>
-                        <th scope="col">{{ 'label.username'|trans }}</th>
-                        <th scope="col">{{ 'label.password'|trans }}</th>
-                        <th scope="col">{{ 'label.role'|trans }}</th>
-                        <th scope="col"></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>john_user</td>
-                        <td>kitten</td>
-                        <td><code>ROLE_USER</code> ({{ 'help.role_user'|trans }})</td>
-                        <td>
-                            <button class="btn btn-primary btn-sm" {{ stimulus_action('login', 'prefillJohnUser') }}>
-                                <twig:ux:icon name="tabler:user" aria-hidden="false" aria-label="Log in as the user John"/>
-                            </button>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>jane_admin</td>
-                        <td>kitten</td>
-                        <td><code>ROLE_ADMIN</code> ({{ 'help.role_admin'|trans }})</td>
-                        <td>
-                            <button class="btn btn-primary btn-sm" {{ stimulus_action('login', 'prefillJaneAdmin') }}>
-                                <twig:ux:icon name="tabler:user" aria-hidden="false" aria-label="Log in as the user Jane"/>
-                            </button>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-
-            <div id="login-users-help" class="card">
-                <div class="card-body">
-                    <p class="card-text">
-                        <span class="badge text-bg-info">{{ 'note'|trans }}</span>
-                        {{ 'help.reload_fixtures'|trans }}<br>
-                        <code class="d-block my-2 p-2">$ php bin/console doctrine:fixtures:load</code>
-                    </p>
-
-                    <p class="card-text">
-                        <span class="badge text-bg-info">{{ 'tip'|trans }}</span>
-                        {{ 'help.add_user'|trans }}<br>
-                        <code class="d-block my-2 p-2">$ php bin/console app:add-user</code>
-                    </p>
+                    <p class="text-muted small mb-3"><i class="bi bi-people me-1"></i>Acessos de exemplo (ambiente de desenvolvimento)</p>
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle login-user-table mb-0">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Usuario</th>
+                                    <th scope="col">Senha</th>
+                                    <th scope="col">Perfil</th>
+                                    <th scope="col" class="text-end">Usar</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="fw-semibold">john_user</td>
+                                    <td><code>kitten</code></td>
+                                    <td><code>ROLE_USER</code></td>
+                                    <td class="text-end">
+                                        <button class="btn btn-outline-primary btn-sm" {{ stimulus_action('login', 'prefillJohnUser') }}>
+                                            <i class="bi bi-person-check"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-semibold">jane_admin</td>
+                                    <td><code>kitten</code></td>
+                                    <td><code>ROLE_ADMIN</code></td>
+                                    <td class="text-end">
+                                        <button class="btn btn-outline-primary btn-sm" {{ stimulus_action('login', 'prefillJaneAdmin') }}>
+                                            <i class="bi bi-person-gear"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
-{% endblock %}
-
-{% block sidebar %}
-    {{ parent() }}
-
-    {{ show_source_code(_self) }}
+    </section>
 {% endblock %}

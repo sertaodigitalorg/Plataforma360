@@ -5,6 +5,8 @@
 - Docker Compose com Nginx, PHP 8.3 FPM, PostgreSQL/PostGIS e Adminer.
 - Symfony 7 com Doctrine, Twig, Bootstrap 5 e API Platform.
 - Homepage institucional, healthcheck e OpenAPI.
+- Home publica com secao de avisos/postagens usando o modulo de blog em leitura publica.
+- Tela de login administrativa em portugues e alinhada ao padrao visual institucional.
 
 ## Fase 2 - Dados Territoriais e Pipeline Operacional
 
@@ -91,10 +93,19 @@
 ### Navbar
 - Dois novos menus adicionados: **Operações** (Visão Geral, Pipelines, Execuções, Observabilidade, Alertas, Métricas IA, Logs) e **Governança** (Dados, Governança IA, Custos, Auditoria).
 - Variáveis `operationsActive` e `governanceActive` para highlight ativo.
+- Expansao do uso de hub pages para Dados, Inteligencia, Integracoes, IA, Operacoes, Governanca e Plataforma.
+
+### UX e consistencia visual
+- Layout lateral padronizado com `20px` no navbar e no corpo das paginas.
+- Home publica reorganizada com cards institucionais antes da secao de publicacoes.
+- Login redesenhado em dois cards, mantendo acessos de exemplo no card de entrada.
 
 ### Banco de dados (migração `Version20260522220000`)
 - 8 tabelas criadas: `pipelines`, `pipeline_executions`, `alerts`, `system_metrics`, `data_governance_records`, `audit_logs`, `tenants`, `cost_records`.
 - Seeds: 1 tenant padrão, 4 pipelines de exemplo, 1 alerta informativo.
+
+### Banco de dados (migração `Version20260523143000`)
+- Renomeacao das tabelas legadas `symfony_demo_post`, `symfony_demo_comment`, `symfony_demo_tag` e `symfony_demo_user` para `post`, `comment`, `tag` e `app_user`.
 
 ### Segurança
 - YAML dos pipelines sanitizado com `strip_tags()` antes de persistir.

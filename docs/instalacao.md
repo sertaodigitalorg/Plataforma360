@@ -64,6 +64,7 @@ docker compose --profile ai --profile ops up -d
 | Serviço | URL | Perfil |
 |---|---|---|
 | Plataforma360 | http://localhost:8080 | padrão |
+| Login admin | http://localhost:8080/admin/login | padrão |
 | Adminer (DB) | http://localhost:8081 | padrão |
 | Kestra UI | http://localhost:8082/ui/ | `ops` |
 | Ollama API | http://localhost:11434 | `ai` |
@@ -71,10 +72,18 @@ docker compose --profile ai --profile ops up -d
 | API Platform | http://localhost:8080/api | padrão |
 | Healthcheck | http://localhost:8080/health | padrão |
 
+### Estado atual da interface
+
+- A home publica (`/`) exibe os cards institucionais da plataforma e uma secao de postagens publicas/avisos.
+- O acesso administrativo acontece pela tela `admin/login`, ja traduzida para portugues e alinhada ao padrao visual da plataforma.
+- O navbar principal usa hubs diretos para `Inteligencia`, `Dados`, `Integracoes`, `IA`, `Operacoes`, `Governanca` e `Plataforma`.
+
 ## Usuários padrão (homologação local)
 
 - `jane_admin / kitten` — ROLE_ADMIN
 - `john_user / kitten` — ROLE_USER
+
+Na tela de login, os usuarios de exemplo aparecem abaixo do botao **Entrar** para preenchimento rapido no ambiente local.
 
 ## Navegação por fase
 
@@ -112,6 +121,21 @@ docker compose --profile ai --profile ops up -d
 - **Governança → Governança IA** — rastreamento de uso IA
 - **Governança → Custos** — custos por serviço externo
 - **Governança → Auditoria** — trilha completa de ações admin
+
+## Migrações recentes importantes
+
+Foi adicionada a migration `Version20260523143000` para renomear tabelas legadas do Symfony Demo:
+
+- `symfony_demo_post` → `post`
+- `symfony_demo_comment` → `comment`
+- `symfony_demo_tag` → `tag`
+- `symfony_demo_user` → `app_user`
+
+Para aplicar no ambiente local:
+
+```bash
+wsl -e bash -c "cd /mnt/c/Plataforma360 && docker compose exec php bin/console doctrine:migrations:migrate --no-interaction"
+```
 
 ## Storage RAW
 

@@ -6,6 +6,21 @@ Este manual descreve a ordem correta para cadastrar e operar cada funcionalidade
 
 ---
 
+## Acesso inicial e navegacao atual
+
+- **Home publica:** `http://localhost:8080/` exibe os cards institucionais da plataforma e uma secao de postagens/avisos publicos.
+- **Login administrativo:** `http://localhost:8080/admin/login`
+- **Navbar principal:** usa links diretos para hubs de `Inteligencia`, `Dados`, `Integracoes`, `IA`, `Operacoes`, `Governanca` e `Plataforma`.
+
+### Como ler os avisos publicos
+
+1. Acesse a home publica.
+2. Role ate a secao de postagens logo abaixo dos cards institucionais.
+3. Clique em **Ler postagem** para abrir o conteudo completo.
+4. Clique em **Ver todas as postagens** para abrir a listagem publica do blog.
+
+---
+
 ## Ordem de Operação Recomendada
 
 ```

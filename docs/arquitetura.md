@@ -75,6 +75,8 @@ Responsavel por:
 - Registro institucional das execucoes de sincronizacao e da trilha de ingestao.
 - **Fase 5**: Assistente de IA híbrido (Ollama local + OpenAI), agentes especializados, NL-to-SQL, embeddings vetoriais, governança de IA.
 - **Fase 6**: Dashboard de operações, gerenciamento de pipelines Kestra, observabilidade de serviços, alertas, trilha de auditoria, rastreamento de custos, classificação LGPD.
+- Homepage publica institucional com cards de modulos e secao de postagens/avisos publicos lidos sem autenticacao.
+- Navegacao administrativa organizada por hub pages para Dados, Inteligencia, Integracoes, IA, Operacoes, Governanca e Plataforma.
 
 Nao deve ser responsavel por:
 
@@ -278,6 +280,8 @@ Responsavel por:
 - APIs.
 - Servicos digitais.
 - Modulos especificos por secretaria ou area de governo.
+- Home publica com leitura de avisos internos publicados via modulo de posts.
+- Experiencia administrativa padronizada com navbar unico, hubs de entrada e login institucional em portugues.
 
 Apps representam os modulos de negocio da Plataforma360. Eles materializam funcionalidades para usuarios finais e equipes gestoras, utilizando servicos compartilhados e integracoes controladas com os demais componentes.
 

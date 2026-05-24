@@ -4,6 +4,12 @@
 
 O módulo de IA da Plataforma360 implementa uma **arquitetura híbrida**: modelos locais via **Ollama** (soberania de dados, sem custo) e modelos externos via **OpenAI** (quando maior capacidade for necessária). Toda interação é auditada em `ai_interactions`.
 
+## Estado atual do modulo
+
+- O acesso ao modulo acontece pelo hub **IA** no navbar principal.
+- A navegacao administrativa foi consolidada em links diretos para as telas do modulo, evitando dropdowns extensos.
+- A entidade `AiModel` foi estabilizada para formularios novos, com inicializacao segura dos campos textuais principais.
+
 ### Componentes
 
 | Componente | Tecnologia | Perfil Docker | Porta |

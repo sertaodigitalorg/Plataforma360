@@ -139,9 +139,9 @@ Crie o arquivo `.vscode/settings.json` na raiz do projeto com as configurações
       "driver": "PostgreSQL",
       "server": "localhost",
       "port": 5432,
-      "database": "app",
-      "username": "app",
-      "password": "app"
+      "database": "plataforma360",
+      "username": "plataforma360",
+      "password": "plataforma360"
     }
   ],
   "editor.rulers": [120],
@@ -151,7 +151,7 @@ Crie o arquivo `.vscode/settings.json` na raiz do projeto com as configurações
 }
 ```
 
-> **Nota:** O PostgreSQL fica exposto na porta `5432` do host quando os containers estão rodando (`make up`). A senha padrão é `app` — ajuste conforme seu `.env`.
+> **Nota:** O PostgreSQL fica exposto na porta `5432` do host quando os containers estão rodando (`make up`). Os valores padrao usados no projeto sao `database=plataforma360`, `username=plataforma360` e `password=plataforma360`, salvo customizacao no `.env`.
 
 ---
 
@@ -363,6 +363,13 @@ O Copilot aplica instruções automaticamente conforme o arquivo aberto:
 | `apps/core/src/**/*.php` | Symfony 7.4, PHP 8.3, Doctrine ORM 3.2 |
 | `apps/core/templates/**/*.twig` | Bootstrap 5.3, Bootstrap Icons, padrão visual da plataforma |
 | `future/kestra/flows/**/*.yml` | Kestra: namespace plataforma360, PostgreSQL, Python tasks |
+
+No frontend, o padrao atual carregado pelo Copilot inclui:
+
+- uso obrigatorio de `{% block body %}`;
+- padding lateral de `20px` alinhado ao navbar;
+- preferencia por hub pages no lugar de dropdowns grandes;
+- home publica e login seguindo o padrao definido em `.github/agents/frontend.agent.md`.
 
 ---
 
